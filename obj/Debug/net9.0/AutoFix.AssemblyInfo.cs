@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutoFix")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1207ec70a6266d429963b781f1ba99592d3b778")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutoFix")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutoFix")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
