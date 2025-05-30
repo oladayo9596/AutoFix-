@@ -1,0 +1,110 @@
+@model AutoFix.Models.Mechanic
+@{
+    ViewData["Title"] = "Mechanic Profile";
+    var skills = new List<string> 
+    { 
+        "Engine Repair", "Transmission", "Brakes", "Electrical Systems", 
+        "Suspension", "A/C Repair", "Diagnostics", "Body Work"
+    };
+    
+    var services = new List<string> 
+    { 
+        "Oil Change", "Tire Rotation", "Brake Service", "Engine Tune-up", 
+        "Battery Replacement", "Fluid Flush", "Inspection", "Alignment" 
+    };
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar-container bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                            <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="mb-1">@Model.FullName</h4>
+                        <p class="text-muted">@Model.UserName</p>
+                    </div>
+                    
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Email</span>
+                            <span>@Model.Email</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Member Since</span>
+                            <span>@Model.CreatedDate.ToString("MMM dd, yyyy")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Orders Completed</span>
+                            <span>@ViewBag.CompletedOrdersCount</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Update Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="UpdateProfile">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="mb-4">
+                            <h5>Skills and Expertise</h5>
+                            <p class="text-muted small">Select all skills that apply to you</p>
+                            
+                            <div class="row">
+                                @foreach(var skill in skills)
+                                {
+                                    <div class="col-md-4 col-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="skill-@skill.Replace(" ", "-").ToLower()" 
+                                                   name="Skills" value="@skill" @(Model.Skills.Contains(skill) ? "checked" : "")>
+                                            <label class="form-check-label" for="skill-@skill.Replace(" ", "-").ToLower()">@skill</label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Services Offered</h5>
+                            <p class="text-muted small">Select all services that you provide</p>
+                            
+                            <div class="row">
+                                @foreach(var service in services)
+                                {
+                                    <div class="col-md-4 col-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="service-@service.Replace(" ", "-").ToLower()" 
+                                                   name="Services" value="@service" @(Model.Services.Contains(service) ? "checked" : "")>
+                                            <label class="form-check-label" for="service-@service.Replace(" ", "-").ToLower()">@service</label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Bio/Additional Information</label>
+                            <textarea class="form-control" name="Bio" rows="4" placeholder="Tell clients about your experience and expertise...">@Model.Bio</textarea>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

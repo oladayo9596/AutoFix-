@@ -1,0 +1,105 @@
+@page
+@{
+    Layout = null;
+    var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>IP Address Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+        }
+        .info-box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .instructions {
+            background-color: #f0f7ff;
+            border-left: 5px solid #0066cc;
+            padding: 15px;
+        }
+        .step {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IP Address Information</h1>
+        
+        <div class="info-box">
+            <h2>Your Local IP Address:</h2>
+            <p><strong>@ip</strong></p>
+            <p><em>Note: This is your local server IP, not your public IP address.</em></p>
+        </div>
+        
+        <div class="info-box">
+            <h2>Your Public IP Address:</h2>
+            <div id="publicIp">Loading...</div>
+        </div>
+        
+        <div class="instructions">
+            <h2>MongoDB Atlas IP Whitelist Instructions</h2>
+            
+            <div class="step">
+                <strong>1.</strong> Log in to your MongoDB Atlas account.
+            </div>
+            
+            <div class="step">
+                <strong>2.</strong> Select your cluster (AutoFix).
+            </div>
+            
+            <div class="step">
+                <strong>3.</strong> Click on "Network Access" in the left sidebar.
+            </div>
+            
+            <div class="step">
+                <strong>4.</strong> Click "ADD IP ADDRESS".
+            </div>
+            
+            <div class="step">
+                <strong>5.</strong> Add your public IP address (shown above) or click "ADD CURRENT IP ADDRESS".
+            </div>
+            
+            <div class="step">
+                <strong>6.</strong> Optionally, add a comment like "My development machine" and click "Confirm".
+            </div>
+            
+            <div class="step">
+                <strong>7.</strong> Wait a few minutes for the changes to propagate.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get public IP
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('publicIp').innerHTML = "<strong>" + data.ip + "</strong>";
+            })
+            .catch(error => {
+                document.getElementById('publicIp').innerHTML = "Error fetching IP: " + error.message;
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Profile";
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+    var fullName = User.FindFirst("FullName")?.Value;
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+    var isMechanic = role == "Mechanic";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>@role Profile</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-person-circle" style="font-size: 6rem;"></i>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h4>@fullName</h4>
+                        <span class="badge bg-info">@role</span>
+                    </div>
+
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Username:</th>
+                                <td>@userName</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Email:</th>
+                                <td>@email</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="d-grid mt-3">
+                        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Edit">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>@(isMechanic ? "My Services & Skills" : "My Activity")</h5>
+                </div>
+                <div class="card-body">
+                    @if (isMechanic)
+                    {
+                        <div class="mb-4">
+                            <h6>Skills</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <!-- Skills would be loaded dynamically -->
+                                <span class="badge bg-secondary">Engine Repair</span>
+                                <span class="badge bg-secondary">Transmission</span>
+                                <span class="badge bg-secondary">Brakes</span>
+                                <!-- Add more skills here -->
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h6>Services</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <!-- Services would be loaded dynamically -->
+                                <span class="badge bg-secondary">Oil Change</span>
+                                <span class="badge bg-secondary">Tune-Up</span>
+                                <span class="badge bg-secondary">Battery Replacement</span>
+                                <!-- Add more services here -->
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid mt-3">
+                            <a class="btn btn-outline-primary" asp-controller="Orders" asp-action="MyAcceptedOrders">View My Orders</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <h6>Recent Activity</h6>
+                            <div class="list-group">
+                                <!-- Recent orders would be loaded dynamically -->
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Oil Change Service</h6>
+                                        <small>3 days ago</small>
+                                    </div>
+                                    <p class="mb-1">Status: <span class="badge bg-warning">Pending</span></p>
+                                </div>
+                                <!-- More orders here -->
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <a class="btn btn-primary" asp-controller="Orders" asp-action="CreateOrder">Request New Service</a>
+                            <a class="btn btn-outline-primary" asp-controller="Orders" asp-action="MyOrders">View All Orders</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

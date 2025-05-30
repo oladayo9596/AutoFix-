@@ -1,0 +1,208 @@
+@{
+    ViewData["Title"] = "Register";
+    var role = ViewBag.Role ?? "Client";
+    bool isMechanic = role == "Mechanic";
+}
+
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <h1 class="display-4">Create Your Account</h1>        <div class="mt-3">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="roleSelection" id="roleClient" value="Client" @(role == "Client" ? "checked" : "") required />
+                <label class="form-check-label" for="roleClient">
+                    <i class="bi bi-person"></i> Register as Client
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="roleSelection" id="roleMechanic" value="Mechanic" @(role == "Mechanic" ? "checked" : "") required />
+                <label class="form-check-label" for="roleMechanic">
+                    <i class="bi bi-tools"></i> Register as Mechanic
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Registration</h5>
+                </div>
+                <div class="card-body">                    <form method="post" asp-action="Register">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <!-- Hidden input to capture the selected role -->
+                        <input type="hidden" id="selectedRole" name="role" value="@role" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName" name="fullName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="userName" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="userName" name="userName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="phoneNumber" class="form-label">Phone Number (Optional)</label>
+                            <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber">
+                        </div>
+                        <div class="mechanic-fields" style="display:@(isMechanic ? "block" : "none")">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Skills (Select all that apply)</label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="engine-repair" name="skills" value="Engine Repair">
+                                            <label class="form-check-label" for="engine-repair">Engine Repair</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="transmission" name="skills" value="Transmission">
+                                            <label class="form-check-label" for="transmission">Transmission</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="brakes" name="skills" value="Brakes">
+                                            <label class="form-check-label" for="brakes">Brakes</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="electrical" name="skills" value="Electrical Systems">
+                                            <label class="form-check-label" for="electrical">Electrical Systems</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="suspension" name="skills" value="Suspension">
+                                            <label class="form-check-label" for="suspension">Suspension</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="ac" name="skills" value="A/C Repair">
+                                            <label class="form-check-label" for="ac">A/C Repair</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Services Offered (Select all that apply)</label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="oil-change" name="services" value="Oil Change">
+                                            <label class="form-check-label" for="oil-change">Oil Change</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="tune-up" name="services" value="Tune-Up">
+                                            <label class="form-check-label" for="tune-up">Tune-Up</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="battery" name="services" value="Battery Replacement">
+                                            <label class="form-check-label" for="battery">Battery Replacement</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="tire" name="services" value="Tire Service">
+                                            <label class="form-check-label" for="tire">Tire Service</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="diagnostics" name="services" value="Diagnostics">
+                                            <label class="form-check-label" for="diagnostics">Diagnostics</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="emergency" name="services" value="Emergency Roadside">
+                                            <label class="form-check-label" for="emergency">Emergency Roadside</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <p>Already have an account?</p>
+                            <a asp-action="Login" class="btn btn-outline-primary">Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p>Already have an account? <a asp-action="Login">Log in</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>        $(document).ready(function() {
+            function updateFormFields() {
+                var role = $("input[name='roleSelection']:checked").val();
+                // Update hidden input with selected role
+                $("#selectedRole").val(role);
+                
+                if (role === "Mechanic") {
+                    $(".mechanic-fields").show();
+                } else {
+                    $(".mechanic-fields").hide();
+                }
+            }
+            
+            // Update role selection when radio buttons change
+            $("input[name='roleSelection']").change(function() {
+                var selectedRole = $(this).val();
+                $("#selectedRole").val(selectedRole);
+                updateFormFields();
+            });
+            
+            // Initialize on page load
+            updateFormFields();
+            
+            // Form validation before submit
+            $("form").on("submit", function(e) {
+                var fullName = $("#fullName").val().trim();
+                var userName = $("#userName").val().trim();
+                var email = $("#email").val().trim();
+                var password = $("#password").val();
+                var confirmPassword = $("#confirmPassword").val();
+                var role = $("#selectedRole").val();
+                
+                if (!fullName || !userName || !email || !password || !confirmPassword || !role) {
+                    alert("Please fill in all required fields.");
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match.");
+                    e.preventDefault();
+                    return false;
+                }
+                
+                return true;
+            });
+        });
+    </script>
+}

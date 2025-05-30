@@ -1,0 +1,49 @@
+﻿@using System.Security.Claims
+
+<ul class="navbar-nav">
+@if (User.Identity?.IsAuthenticated == true)
+{
+    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+    
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Hello @fullName! (@role)
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">My Profile</a></li>
+            @if (role == "Client")
+            {
+                <li><a class="dropdown-item" asp-controller="Orders" asp-action="MyOrders">My Orders</a></li>
+                <li><a class="dropdown-item" asp-controller="Orders" asp-action="CreateOrder">Request Service</a></li>
+            }
+            else if (role == "Mechanic")
+            {
+                <li><a class="dropdown-item" asp-controller="Orders" asp-action="MyAcceptedOrders">My Orders</a></li>
+                <li><a class="dropdown-item" asp-controller="Orders" asp-action="PendingOrders">Available Orders</a></li>
+            }
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form class="form-inline dropdown-item p-0" asp-controller="Account" asp-action="Logout">
+                    <button type="submit" class="btn btn-link text-dark w-100 text-start ps-3">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-dark" href="#" id="registerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Register
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="registerDropdown">
+            <li><a class="dropdown-item" asp-controller="Account" asp-action="RegisterClient">As Client</a></li>
+            <li><a class="dropdown-item" asp-controller="Account" asp-action="RegisterMechanic">As Mechanic</a></li>
+        </ul>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+    </li>
+}
+</ul>

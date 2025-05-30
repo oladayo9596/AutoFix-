@@ -1,0 +1,124 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Home";
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true;
+    string? role = User.FindFirst(ClaimTypes.Role)?.Value;
+    bool isClient = role == "Client";
+    bool isMechanic = role == "Mechanic";
+}
+
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-3">Auto<span class="text-primary">Fix</span></h1>
+            <p class="lead">Connect with skilled mechanics for all your auto repair needs. Get quick, reliable service from trusted professionals in your area.</p>
+            
+            @if (!isAuthenticated)
+            {
+                <div class="mt-4">
+                    <a asp-controller="Account" asp-action="RegisterClient" class="btn btn-primary btn-lg me-2">Find a Mechanic</a>
+                    <a asp-controller="Account" asp-action="RegisterMechanic" class="btn btn-outline-primary btn-lg">Join as Mechanic</a>
+                </div>
+            }
+            else if (isClient)
+            {
+                <div class="mt-4">
+                    <a asp-controller="Orders" asp-action="CreateOrder" class="btn btn-primary btn-lg me-2">Request Service</a>
+                    <a asp-controller="Orders" asp-action="MyOrders" class="btn btn-outline-primary btn-lg">My Orders</a>
+                </div>
+            }
+            else if (isMechanic)
+            {
+                <div class="mt-4">
+                    <a asp-controller="Orders" asp-action="PendingOrders" class="btn btn-primary btn-lg me-2">Available Requests</a>
+                    <a asp-controller="Orders" asp-action="MyAcceptedOrders" class="btn btn-outline-primary btn-lg">My Orders</a>
+                </div>
+            }
+        </div>
+        <div class="col-lg-6">
+            <img src="https://source.unsplash.com/random/600x400/?car,mechanic" class="img-fluid rounded shadow-lg" alt="AutoFix Hero Image">
+        </div>
+    </div>
+    
+    <!-- Services Section -->
+    <section class="py-5">
+        <h2 class="text-center mb-5">Our Services</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="display-5 mb-3 text-primary">
+                            <i class="bi bi-tools"></i>
+                        </div>
+                        <h5 class="card-title">Car Repairs</h5>
+                        <p class="card-text">Access skilled mechanics for any car repair needs, from engine work to electrical systems.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="display-5 mb-3 text-primary">
+                            <i class="bi bi-speedometer"></i>
+                        </div>
+                        <h5 class="card-title">Diagnostics</h5>
+                        <p class="card-text">Professional diagnostic services to identify issues and recommend the right repairs.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="display-5 mb-3 text-primary">
+                            <i class="bi bi-car-front"></i>
+                        </div>
+                        <h5 class="card-title">Maintenance</h5>
+                        <p class="card-text">Regular maintenance services to keep your vehicle running smoothly and prevent future problems.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works Section -->
+    <section class="py-5 bg-light rounded">
+        <h2 class="text-center mb-5">How It Works</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <span class="h4 mb-0">1</span>
+                        </div>
+                        <h5 class="card-title">Request Service</h5>
+                        <p class="card-text">Describe your vehicle issue and submit a service request through our platform.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <span class="h4 mb-0">2</span>
+                        </div>
+                        <h5 class="card-title">Get Connected</h5>
+                        <p class="card-text">Qualified mechanics in your area will respond to your service request.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <span class="h4 mb-0">3</span>
+                        </div>
+                        <h5 class="card-title">Get It Fixed</h5>
+                        <p class="card-text">Schedule the service and get your vehicle fixed by a trusted professional.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

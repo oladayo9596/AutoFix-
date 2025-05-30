@@ -1,0 +1,89 @@
+@model IEnumerable<AutoFix.Models.ClientOrder>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No orders found in this category.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Client</th>
+                    <th>Service Type</th>
+                    <th>Scheduled Time</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>@order.Id.Substring(order.Id.Length - 6)</td>
+                        <td>@order.ClientName</td>
+                        <td>@order.ServiceType</td>
+                        <td>@(order.ScheduledTime?.ToString("MMM d, yyyy h:mm tt") ?? "Not scheduled")</td>
+                        <td>@order.Location</td>
+                        <td>
+                            @switch (order.Status)
+                            {
+                                case OrderStatus.Accepted:
+                                    <span class="badge bg-success">In Progress</span>
+                                    break;
+                                case OrderStatus.Completed:
+                                    <span class="badge bg-primary">Completed</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-info">@order.Status</span>
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">Details</a>
+                                @if (order.Status == OrderStatus.Accepted)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#completeModal-@order.Id">
+                                        Mark Complete
+                                    </button>
+                                }
+                            </div>
+                            
+                            <!-- Complete Modal -->
+                            @if (order.Status == OrderStatus.Accepted)
+                            {
+                                <div class="modal fade" id="completeModal-@order.Id" tabindex="-1" aria-labelledby="completeModalLabel-@order.Id" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form asp-action="CompleteOrder" method="post">
+                                                <input type="hidden" name="orderId" value="@order.Id" />
+                                                
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="completeModalLabel-@order.Id">Mark Service as Complete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to mark this service as complete?</p>
+                                                    <p>Service: <strong>@order.ServiceType</strong></p>
+                                                    <p>Client: <strong>@order.ClientName</strong></p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-success">Mark Complete</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

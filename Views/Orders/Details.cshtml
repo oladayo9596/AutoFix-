@@ -1,0 +1,367 @@
+@model AutoFix.Models.ClientOrder
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Order Details";
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var isClient = userRole == "Client";
+    var isMechanic = userRole == "Mechanic";
+    var canAccept = isMechanic && Model.Status == OrderStatus.Pending;
+    var canComplete = isMechanic && Model.Status == OrderStatus.Accepted && Model.MechanicId == userId;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Service Request Details</h1>
+        <div>
+            @if (isClient)
+            {
+                <a asp-action="MyOrders" class="btn btn-outline-primary">Back to My Orders</a>
+            }
+            else if (isMechanic && Model.Status == OrderStatus.Pending)
+            {
+                <a asp-action="PendingOrders" class="btn btn-outline-primary">Back to Available Orders</a>
+            }
+            else if (isMechanic)
+            {
+                <a asp-action="MyAcceptedOrders" class="btn btn-outline-primary">Back to My Orders</a>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Order #@Model.Id.Substring(Model.Id.Length - 6)</h5>
+                        @switch (Model.Status)
+                        {
+                            case OrderStatus.Pending:
+                                <span class="badge bg-warning">Pending</span>
+                                break;
+                            case OrderStatus.Accepted:
+                                <span class="badge bg-success">Accepted</span>
+                                break;
+                            case OrderStatus.Completed:
+                                <span class="badge bg-primary">Completed</span>
+                                break;
+                            case OrderStatus.Declined:
+                                <span class="badge bg-danger">Declined</span>
+                                break;
+                            case OrderStatus.Cancelled:
+                                <span class="badge bg-secondary">Cancelled</span>
+                                break;
+                            default:
+                                <span class="badge bg-info">Unknown</span>
+                                break;
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.ServiceType</h5>
+                    <p class="card-text">
+                        <strong>Description:</strong><br />
+                        @Model.Description
+                    </p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Location:</strong> @Model.Location</p>
+                            <p>
+                                <strong>Scheduled Time:</strong>
+                                @(Model.ScheduledTime?.ToString("MMM d, yyyy h:mm tt") ?? "Not scheduled")
+                            </p>
+                            <p><strong>Budget:</strong> @(Model.EstimatedPrice > 0 ? $"${Model.EstimatedPrice:N2}" : "Not specified")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Order Date:</strong> @Model.OrderDate.ToString("MMM d, yyyy h:mm tt")</p>
+                            <p><strong>Client:</strong> @Model.ClientName</p>
+                            @if (!string.IsNullOrEmpty(Model.MechanicName))
+                            {
+                                <p><strong>Mechanic:</strong> @Model.MechanicName</p>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="mt-3">
+                            <strong>Additional Notes:</strong>
+                            <p>@Model.Notes</p>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    @if (canAccept)
+                    {
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#declineModal">
+                                Decline
+                            </button>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#acceptModal">
+                                Accept Request
+                            </button>
+                        </div>
+                    }
+                    else if (canComplete)
+                    {
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
+                                Mark as Complete
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Status Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Status Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6>Order Created</h6>
+                                <p class="text-muted">@Model.OrderDate.ToString("MMM d, yyyy h:mm tt")</p>
+                                <p>Service request submitted by @Model.ClientName</p>
+                            </div>
+                        </div>
+                        
+                        @if (Model.Status == OrderStatus.Accepted || Model.Status == OrderStatus.Completed)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6>Order Accepted</h6>
+                                    <!-- This would ideally show the actual acceptance date -->
+                                    <p class="text-muted">Mechanic: @Model.MechanicName</p>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (Model.Status == OrderStatus.Completed)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-info"></div>
+                                <div class="timeline-content">
+                                    <h6>Service Completed</h6>
+                                    <!-- This would ideally show the completion date -->
+                                    <p class="text-muted">Completed by: @Model.MechanicName</p>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (Model.Status == OrderStatus.Declined)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-danger"></div>
+                                <div class="timeline-content">
+                                    <h6>Order Declined</h6>
+                                    <p class="text-muted">Reason: @Model.Notes</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Contact Info Card -->
+            @if (Model.Status == OrderStatus.Accepted || Model.Status == OrderStatus.Completed)
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Contact Information</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (isClient)
+                        {
+                            <h6>Your Mechanic:</h6>
+                            <p><strong>@Model.MechanicName</strong></p>
+                            <p><i class="bi bi-telephone-fill"></i> [Phone Number Placeholder]</p>
+                            <p><i class="bi bi-envelope-fill"></i> [Email Placeholder]</p>
+                        }
+                        else if (isMechanic)
+                        {
+                            <h6>Client:</h6>
+                            <p><strong>@Model.ClientName</strong></p>
+                            <p><i class="bi bi-telephone-fill"></i> [Phone Number Placeholder]</p>
+                            <p><i class="bi bi-envelope-fill"></i> [Email Placeholder]</p>
+                            <p><i class="bi bi-geo-alt-fill"></i> @Model.Location</p>
+                        }
+                    </div>
+                </div>
+            }
+            
+            <!-- Actions Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    @if (isClient)
+                    {
+                        @if (Model.Status == OrderStatus.Pending)
+                        {
+                            <p>Your service request is waiting for a mechanic to accept.</p>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                    Cancel Request
+                                </button>
+                            </div>
+                        }
+                        else if (Model.Status == OrderStatus.Accepted)
+                        {
+                            <p>Your service request has been accepted by a mechanic.</p>
+                            <div class="d-grid gap-2">
+                                <a href="#" class="btn btn-outline-primary">Contact Mechanic</a>
+                            </div>
+                        }
+                        else if (Model.Status == OrderStatus.Completed)
+                        {
+                            <p>This service has been marked as completed by the mechanic.</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary">Leave a Review</button>
+                            </div>
+                        }
+                    }
+                    else if (isMechanic && Model.Status == OrderStatus.Pending)
+                    {
+                        <p>You can accept this service request if you have the required skills and availability.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accept Modal -->
+@if (canAccept)
+{
+    <div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="AcceptOrder" method="post">
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="acceptModalLabel">Accept Service Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You are accepting the service request for <strong>@Model.ServiceType</strong>.</p>
+                        <p>Client: <strong>@Model.ClientName</strong></p>
+                        <p>Location: <strong>@Model.Location</strong></p>
+                        <p>Scheduled: <strong>@(Model.ScheduledTime?.ToString("MMM d, yyyy h:mm tt") ?? "Flexible")</strong></p>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Additional Notes (Optional)</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Add any notes for the client..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Accept Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decline Modal -->
+    <div class="modal fade" id="declineModal" tabindex="-1" aria-labelledby="declineModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="DeclineOrder" method="post">
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="declineModalLabel">Decline Service Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to decline this service request?</p>
+                        
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason (Optional)</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Provide a reason for declining..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Decline Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Complete Modal -->
+@if (canComplete)
+{
+    <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="completeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="CompleteOrder" method="post">
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="completeModalLabel">Mark Service as Complete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to mark this service as complete?</p>
+                        <p>Service: <strong>@Model.ServiceType</strong></p>
+                        <p>Client: <strong>@Model.ClientName</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Mark Complete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Add some custom CSS for the timeline -->
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+    }
+    
+    .timeline-content {
+        padding-bottom: 10px;
+    }
+</style>

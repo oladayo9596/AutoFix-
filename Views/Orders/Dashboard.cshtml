@@ -1,0 +1,217 @@
+@model Dictionary<string, object>
+@using AutoFix.Models
+@{
+    ViewData["Title"] = "Mechanic Dashboard";
+    var acceptedOrders = Model["AcceptedOrders"] as List<ClientOrder>;
+    var completedOrders = Model["CompletedOrders"] as List<ClientOrder>;
+    var pendingOrders = Model["PendingOrders"] as List<ClientOrder>;
+    var acceptedCount = (int)Model["AcceptedCount"];
+    var completedCount = (int)Model["CompletedCount"];
+    var pendingCount = (int)Model["PendingCount"];
+}
+
+<div class="container mt-4">
+    <h1 class="display-4 mb-4">Mechanic Dashboard</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary mb-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-primary text-white rounded p-3 me-3">
+                        <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0">@pendingCount</h3>
+                        <p class="card-text text-muted">Available Jobs</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-end">
+                    <a asp-action="PendingOrders" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm border-info mb-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-info text-white rounded p-3 me-3">
+                        <i class="bi bi-tools" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0">@acceptedCount</h3>
+                        <p class="card-text text-muted">In Progress</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-end">
+                    <a asp-action="MyAcceptedOrders" class="btn btn-sm btn-outline-info">View All</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm border-success mb-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-success text-white rounded p-3 me-3">
+                        <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0">@completedCount</h3>
+                        <p class="card-text text-muted">Completed</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-end">
+                    <!-- Add a completed orders history page link here if you add that feature -->
+                    <a asp-action="MyAcceptedOrders" class="btn btn-sm btn-outline-success">View All</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Available Jobs -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Available Jobs</h5>
+                </div>
+                <div class="card-body">
+                    @if (pendingOrders != null && pendingOrders.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var order in pendingOrders)
+                            {
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">@order.ServiceType</h5>
+                                        <small>@order.OrderDate.ToString("MMM dd")</small>
+                                    </div>
+                                    <p class="mb-1">@(order.Description?.Length > 50 ? order.Description.Substring(0, 50) + "..." : order.Description)</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small>By: @order.ClientName</small>
+                                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center mt-3">
+                            <a asp-action="PendingOrders" class="btn btn-outline-primary">See All Available Jobs</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-clipboard text-muted" style="font-size: 2rem;"></i>
+                            <p class="mt-3">No available jobs at the moment</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- In Progress Jobs -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Your Active Jobs</h5>
+                </div>
+                <div class="card-body">
+                    @if (acceptedOrders != null && acceptedOrders.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var order in acceptedOrders)
+                            {
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">@order.ServiceType</h5>
+                                        <small>@order.OrderDate.ToString("MMM dd")</small>
+                                    </div>
+                                    <p class="mb-1">@(order.Description?.Length > 50 ? order.Description.Substring(0, 50) + "..." : order.Description)</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small>Client: @order.ClientName</small>
+                                        <div>
+                                            <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-info me-1">View</a>
+                                            <form asp-action="CompleteOrder" asp-route-orderId="@order.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-success">Complete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center mt-3">
+                            <a asp-action="MyAcceptedOrders" class="btn btn-outline-info">See All Your Jobs</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-tools text-muted" style="font-size: 2rem;"></i>
+                            <p class="mt-3">You don't have any active jobs</p>
+                            <a asp-action="PendingOrders" class="btn btn-info mt-2">Browse Available Jobs</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Completed Jobs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Recently Completed Jobs</h5>
+                </div>
+                <div class="card-body">
+                    @if (completedOrders != null && completedOrders.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service Type</th>
+                                        <th>Client</th>
+                                        <th>Order Date</th>
+                                        <th>Completed Date</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in completedOrders)
+                                    {
+                                        <tr>
+                                            <td>@order.ServiceType</td>
+                                            <td>@order.ClientName</td>
+                                            <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
+                                            <td>@(order.ScheduledTime?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-success">View</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-check-circle text-muted" style="font-size: 2rem;"></i>
+                            <p class="mt-3">No completed jobs yet</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // You can add some JavaScript here for dashboard functionality
+            console.log("Dashboard loaded");
+        });
+    </script>
+}

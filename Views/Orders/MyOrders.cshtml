@@ -1,0 +1,111 @@
+@model IEnumerable<AutoFix.Models.ClientOrder>
+@using AutoFix.Models
+
+@{
+    ViewData["Title"] = "My Orders";
+    string currentFilter = ViewBag.CurrentFilter as string ?? "";
+}
+
+<div class="container mt-4">
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            @TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>My Service Requests</h1>
+        <a asp-action="CreateOrder" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Request
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No service requests yet!</h4>
+            <p>You haven't created any service requests. Click the "New Request" button to get started.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">                        <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a asp-action="FilterOrders" class="nav-link @(string.IsNullOrEmpty(currentFilter) ? "active" : "")">All</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a asp-action="FilterOrders" asp-route-status="Pending" class="nav-link @(currentFilter == "Pending" ? "active" : "")">Pending</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a asp-action="FilterOrders" asp-route-status="Accepted" class="nav-link @(currentFilter == "Accepted" ? "active" : "")">Active</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a asp-action="FilterOrders" asp-route-status="Completed" class="nav-link @(currentFilter == "Completed" ? "active" : "")">Completed</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a asp-action="FilterOrders" asp-route-status="Declined" class="nav-link @(currentFilter == "Declined" ? "active" : "")">Declined</a>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content mt-4" id="orderTabsContent">
+                            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                                @await Html.PartialAsync("_OrdersList", Model)
+                            </div>
+                            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                                @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Pending))
+                            </div>
+                            <div class="tab-pane fade" id="active" role="tabpanel" aria-labelledby="active-tab">
+                                @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Accepted))
+                            </div>
+                            <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                                @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Completed))
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Enable Bootstrap tabs
+        document.addEventListener('DOMContentLoaded', function() {
+            var triggerTabList = Array.from(document.querySelectorAll('#orderTabs button'));
+            triggerTabList.forEach(function(triggerEl) {
+                var tabTrigger = new bootstrap.Tab(triggerEl);
+                
+                triggerEl.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    tabTrigger.show();
+                });
+            });
+        });
+    </script>
+}

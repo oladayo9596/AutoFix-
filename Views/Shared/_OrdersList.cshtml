@@ -1,0 +1,60 @@
+@model IEnumerable<AutoFix.Models.ClientOrder>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No orders found in this category.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Service Type</th>
+                    <th>Scheduled Time</th>
+                    <th>Status</th>
+                    <th>Mechanic</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>@order.Id.Substring(order.Id.Length - 6)</td>
+                        <td>@order.ServiceType</td>
+                        <td>@(order.ScheduledTime?.ToString("MMM d, yyyy h:mm tt") ?? "Not scheduled")</td>
+                        <td>
+                            @switch (order.Status)
+                            {
+                                case OrderStatus.Pending:
+                                    <span class="badge bg-warning">Pending</span>
+                                    break;
+                                case OrderStatus.Accepted:
+                                    <span class="badge bg-success">Accepted</span>
+                                    break;
+                                case OrderStatus.Completed:
+                                    <span class="badge bg-primary">Completed</span>
+                                    break;
+                                case OrderStatus.Declined:
+                                    <span class="badge bg-danger">Declined</span>
+                                    break;
+                                case OrderStatus.Cancelled:
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-info">Unknown</span>
+                                    break;
+                            }
+                        </td>
+                        <td>@(string.IsNullOrEmpty(order.MechanicName) ? "Not assigned" : order.MechanicName)</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

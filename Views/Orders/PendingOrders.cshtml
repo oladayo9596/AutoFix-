@@ -1,0 +1,96 @@
+@model IEnumerable<AutoFix.Models.ClientOrder>
+
+@{
+    ViewData["Title"] = "Available Service Requests";
+}
+
+<div class="container mt-4">
+    <h1>Available Service Requests</h1>
+    <p class="lead">Browse service requests from clients that match your skills.</p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No pending service requests!</h4>
+            <p>There are currently no pending service requests available. Check back later for new requests.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4 mt-3">
+            @foreach (var order in Model)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">@order.ServiceType</h5>
+                                <span class="badge bg-warning">Pending</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="text-muted">Client: @order.ClientName</h6>
+                            <div class="mb-3">
+                                <i class="bi bi-geo-alt-fill text-primary"></i>
+                                <span>@order.Location</span>
+                            </div>
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-event text-primary"></i>
+                                <span>@(order.ScheduledTime?.ToString("MMM d, yyyy h:mm tt") ?? "Flexible")</span>
+                            </div>
+                            <hr>
+                            <p>
+                                <strong>Description:</strong>
+                                <br>
+                                @order.Description
+                            </p>
+                            <p>
+                                <strong>Budget:</strong> 
+                                @(order.EstimatedPrice > 0 ? $"${order.EstimatedPrice:N2}" : "Not specified")
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-primary">View Details</a>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#acceptModal-@order.Id">
+                                    Accept Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Accept Modal for each order -->
+                <div class="modal fade" id="acceptModal-@order.Id" tabindex="-1" aria-labelledby="acceptModalLabel-@order.Id" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form asp-action="AcceptOrder" method="post">
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="acceptModalLabel-@order.Id">Accept Service Request</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>You are accepting the service request for <strong>@order.ServiceType</strong>.</p>
+                                    <p>Client: <strong>@order.ClientName</strong></p>
+                                    <p>Location: <strong>@order.Location</strong></p>
+                                    <p>Scheduled: <strong>@(order.ScheduledTime?.ToString("MMM d, yyyy h:mm tt") ?? "Flexible")</strong></p>
+                                    
+                                    <div class="mb-3">
+                                        <label for="notes-@order.Id" class="form-label">Additional Notes (Optional)</label>
+                                        <textarea class="form-control" id="notes-@order.Id" name="notes" rows="3" placeholder="Add any notes for the client..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-success">Accept Request</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
