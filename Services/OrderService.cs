@@ -8,13 +8,13 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 
 namespace AutoFix.Services
-{
-    public interface IOrderService
+{    public interface IOrderService
     {
         Task<ClientOrder> CreateOrderAsync(ClientOrder order);
         Task<MechanicOrder> AcceptOrderAsync(string orderId, string mechanicId, string mechanicName, string notes);
         Task<ClientOrder> DeclineOrderAsync(string orderId, string mechanicId, string reason);
         Task<ClientOrder> CompleteOrderAsync(string orderId, string mechanicId);
+        Task<bool> CancelOrderAsync(string orderId, string clientId);
         Task<List<ClientOrder>> GetClientOrdersAsync(string clientId);
         Task<List<ClientOrder>> GetMechanicOrdersAsync(string mechanicId);
         Task<ClientOrder> GetOrderByIdAsync(string orderId);
@@ -310,9 +310,7 @@ namespace AutoFix.Services
                 _logger.LogError(ex, "Unexpected error when retrieving order {OrderId}: {Message}", orderId, ex.Message);
                 throw;
             }
-        }
-
-        public async Task<List<ClientOrder>> GetPendingOrdersAsync()
+        }        public async Task<List<ClientOrder>> GetPendingOrdersAsync()
         {
             try
             {
@@ -330,6 +328,66 @@ namespace AutoFix.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error when retrieving pending orders: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CancelOrderAsync(string orderId, string clientId)
+        {
+            if (string.IsNullOrEmpty(orderId))
+            {
+                throw new ArgumentException("OrderId is required", nameof(orderId));
+            }
+
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("ClientId is required", nameof(clientId));
+            }
+
+            try
+            {
+                _logger.LogInformation("Cancelling order {OrderId} by client {ClientId}", orderId, clientId);
+
+                // First retrieve the order to ensure it exists and belongs to the client
+                var filter = Builders<ClientOrder>.Filter.And(
+                    Builders<ClientOrder>.Filter.Eq(o => o.Id, orderId),
+                    Builders<ClientOrder>.Filter.Eq(o => o.ClientId, clientId)
+                );
+
+                // Additional check to ensure order is in a cancellable state (only pending orders can be cancelled)
+                filter = Builders<ClientOrder>.Filter.And(
+                    filter,
+                    Builders<ClientOrder>.Filter.Eq(o => o.Status, OrderStatus.Pending)
+                );
+
+                var order = await _context.ClientOrders.Find(filter).FirstOrDefaultAsync();
+
+                if (order == null)
+                {
+                    _logger.LogWarning("Order {OrderId} not found or not cancellable", orderId);
+                    return false;
+                }
+
+                // Delete the order from the database
+                var result = await _context.ClientOrders.DeleteOneAsync(filter);
+
+                if (result.DeletedCount == 0)
+                {
+                    _logger.LogWarning("Order {OrderId} not deleted, possibly already processed", orderId);
+                    return false;
+                }
+
+                _logger.LogInformation("Order {OrderId} successfully cancelled and deleted", orderId);
+                return true;
+            }
+            catch (MongoException ex)
+            {
+                _logger.LogError(ex, "MongoDB error when cancelling order {OrderId}: {Message}", orderId, ex.Message);
+                throw new InvalidOperationException($"Database error when cancelling order: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error when cancelling order {OrderId}: {Message}", orderId, ex.Message);
                 throw;
             }
         }

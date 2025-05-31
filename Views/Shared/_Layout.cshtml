@@ -4,49 +4,198 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - AutoFix</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script type="importmap"></script>    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/AutoFix.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/landing-page.css" asp-append-version="true" />
+    <link rel="stylesheet" hr
+    ~/AutoFix.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+    <style>
+        .navvv {
+            background: linear-gradient(135deg, #1a365d 0%, #2d4a72 50%, #4a5568 100%);
+}
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AutoFix</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark navvv shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold fs-3" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-tools me-2 text-warning"></i>Auto<span class="text-warning">Fix</span>
+                </a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                </button>                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-white fw-medium" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house me-1"></i>Home
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole("Client"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white fw-medium" asp-controller="Orders" asp-action="CreateOrder">
+                                        <i class="bi bi-plus-circle me-1"></i>Request Service
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white fw-medium" asp-controller="Orders" asp-action="MyOrders">
+                                        <i class="bi bi-list-ul me-1"></i>My Orders
+                                    </a>
+                                </li>
+                            }
+                            else if (User.IsInRole("Mechanic"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white fw-medium" asp-controller="Orders" asp-action="PendingOrders">
+                                        <i class="bi bi-clipboard-check me-1"></i>Available Requests
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white fw-medium" asp-controller="Orders" asp-action="MyAcceptedOrders">
+                                        <i class="bi bi-gear me-1"></i>My Orders
+                                    </a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-medium" href="#services">
+                                    <i class="bi bi-gear me-1"></i>Services
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-medium" href="#how-it-works">
+                                    <i class="bi bi-info-circle me-1"></i>How It Works
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white fw-medium" href="#contact">
+                                    <i class="bi bi-telephone me-1"></i>Contact
+                                </a>
+                            </li>
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    </header>    <div class="main-content">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="bg-dark text-light py-5 mt-5">
         <div class="container">
-            &copy; 2025 - AutoFix - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-tools me-2 text-warning"></i>Auto<span class="text-warning">Fix</span>
+                    </h5>
+                    <p class="text-light opacity-75">Your trusted partner for all automotive repair needs. Connecting skilled mechanics with car owners for reliable, professional service.</p>
+                    <div class="social-links">
+                        <a href="#" class="text-warning me-3"><i class="bi bi-facebook fs-5"></i></a>
+                        <a href="#" class="text-warning me-3"><i class="bi bi-twitter fs-5"></i></a>
+                        <a href="#" class="text-warning me-3"><i class="bi bi-instagram fs-5"></i></a>
+                        <a href="#" class="text-warning"><i class="bi bi-linkedin fs-5"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-semibold mb-3">Services</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-light text-decoration-none opacity-75">Car Repairs</a></li>
+                        <li class="mb-2"><a href="#" class="text-light text-decoration-none opacity-75">Diagnostics</a></li>
+                        <li class="mb-2"><a href="#" class="text-light text-decoration-none opacity-75">Maintenance</a></li>
+                        <li class="mb-2"><a href="#" class="text-light text-decoration-none opacity-75">Emergency Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-semibold mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-light text-decoration-none opacity-75">About Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-light text-decoration-none opacity-75">Find Mechanic</a></li>
+                        <li class="mb-2"><a href="#" class="text-light text-decoration-none opacity-75">Join as Mechanic</a></li>
+                        <li class="mb-2"><a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-light text-decoration-none opacity-75">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h6 class="fw-semibold mb-3">Contact Info</h6>
+                    <div class="contact-info">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-telephone text-warning me-3"></i>
+                            <span class="text-light opacity-75">+1 (555) 123-4567</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-envelope text-warning me-3"></i>
+                            <span class="text-light opacity-75">info@autofix.com</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-geo-alt text-warning me-3"></i>
+                            <span class="text-light opacity-75">Available Nationwide</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 opacity-25">
+            <div class="text-center">
+                <p class="mb-0 text-light opacity-75">&copy; 2025 AutoFix. All rights reserved. Built with care for automotive excellence.</p>
+            </div>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- Back to top button -->
+    <button id="backToTop" class="btn btn-warning position-fixed bottom-0 end-0 m-4 rounded-circle shadow-lg" style="display: none; z-index: 1000;">
+        <i class="bi bi-arrow-up"></i>
+    </button>    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <script>
+        // Initialize AOS (Animate On Scroll)
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Back to top functionality
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+
+        document.getElementById('backToTop').addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

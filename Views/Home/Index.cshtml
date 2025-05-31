@@ -1,124 +1,413 @@
 ﻿@using System.Security.Claims
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Professional Auto Repair Services";
     bool isAuthenticated = User.Identity?.IsAuthenticated == true;
     string? role = User.FindFirst(ClaimTypes.Role)?.Value;
     bool isClient = role == "Client";
     bool isMechanic = role == "Mechanic";
 }
 
-<div class="container mt-4">
-    <!-- Hero Section -->
-    <div class="row align-items-center mb-5">
-        <div class="col-lg-6">
-            <h1 class="display-4 fw-bold mb-3">Auto<span class="text-primary">Fix</span></h1>
-            <p class="lead">Connect with skilled mechanics for all your auto repair needs. Get quick, reliable service from trusted professionals in your area.</p>
-            
-            @if (!isAuthenticated)
-            {
-                <div class="mt-4">
-                    <a asp-controller="Account" asp-action="RegisterClient" class="btn btn-primary btn-lg me-2">Find a Mechanic</a>
-                    <a asp-controller="Account" asp-action="RegisterMechanic" class="btn btn-outline-primary btn-lg">Join as Mechanic</a>
+<!-- Hero Section with Gradient Background -->
+<section class="hero-section position-relative overflow-hidden">
+    <div class="hero-bg"></div>
+    <div class="container">
+        <div class="row align-items-center min-vh-100 py-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="hero-content text-white">
+                    <h1 class="display-3 fw-bold mb-4">
+                        Your Car Deserves the <span class="text-warning">Best Care</span>
+                    </h1>
+                    <p class="lead mb-4 opacity-90">
+                        Connect with certified mechanics in your area. Get professional, reliable, and affordable auto repair services with just a few clicks.
+                    </p>
+                    
+                    <div class="hero-stats row g-3 mb-4">
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h3 class="fw-bold text-warning mb-0">1000+</h3>
+                                <small class="text-white-50">Happy Customers</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h3 class="fw-bold text-warning mb-0">500+</h3>
+                                <small class="text-white-50">Expert Mechanics</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <h3 class="fw-bold text-warning mb-0">24/7</h3>
+                                <small class="text-white-50">Support</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (!isAuthenticated)
+                    {
+                        <div class="hero-buttons">
+                            <a asp-controller="Account" asp-action="Register" asp-route-role="Client" class="btn btn-warning btn-lg me-3 px-4 py-3 fw-semibold">
+                                <i class="bi bi-search me-2"></i>Find a Mechanic
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" asp-route-role="Mechanic" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold">
+                                <i class="bi bi-person-plus me-2"></i>Join as Mechanic
+                            </a>
+                        </div>
+                    }
+                    else if (isClient)
+                    {
+                        <div class="hero-buttons">
+                            <a asp-controller="Orders" asp-action="CreateOrder" class="btn btn-warning btn-lg me-3 px-4 py-3 fw-semibold">
+                                <i class="bi bi-plus-circle me-2"></i>Request Service
+                            </a>
+                            <a asp-controller="Orders" asp-action="MyOrders" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold">
+                                <i class="bi bi-list-ul me-2"></i>My Orders
+                            </a>
+                        </div>
+                    }
+                    else if (isMechanic)
+                    {
+                        <div class="hero-buttons">
+                            <a asp-controller="Orders" asp-action="PendingOrders" class="btn btn-warning btn-lg me-3 px-4 py-3 fw-semibold">
+                                <i class="bi bi-clipboard-check me-2"></i>Available Requests
+                            </a>
+                            <a asp-controller="Orders" asp-action="MyAcceptedOrders" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold">
+                                <i class="bi bi-gear me-2"></i>My Orders
+                            </a>
+                        </div>
+                    }
                 </div>
-            }
-            else if (isClient)
-            {
-                <div class="mt-4">
-                    <a asp-controller="Orders" asp-action="CreateOrder" class="btn btn-primary btn-lg me-2">Request Service</a>
-                    <a asp-controller="Orders" asp-action="MyOrders" class="btn btn-outline-primary btn-lg">My Orders</a>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="hero-image position-relative">
+                    <img src="https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                         class="img-fluid rounded-4 shadow-lg main-hero-img" alt="Professional Auto Mechanic at Work">
+                    <div class="floating-card position-absolute">
+                        <div class="card bg-white shadow-lg border-0 p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-success text-white me-3">
+                                    <i class="bi bi-check-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-semibold">Service Completed</h6>
+                                    <small class="text-muted">Engine diagnostic finished</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            }
-            else if (isMechanic)
-            {
-                <div class="mt-4">
-                    <a asp-controller="Orders" asp-action="PendingOrders" class="btn btn-primary btn-lg me-2">Available Requests</a>
-                    <a asp-controller="Orders" asp-action="MyAcceptedOrders" class="btn btn-outline-primary btn-lg">My Orders</a>
-                </div>
-            }
-        </div>
-        <div class="col-lg-6">
-            <img src="https://source.unsplash.com/random/600x400/?car,mechanic" class="img-fluid rounded shadow-lg" alt="AutoFix Hero Image">
+            </div>
         </div>
     </div>
-    
-    <!-- Services Section -->
-    <section class="py-5">
-        <h2 class="text-center mb-5">Our Services</h2>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="display-5 mb-3 text-primary">
-                            <i class="bi bi-tools"></i>
-                        </div>
-                        <h5 class="card-title">Car Repairs</h5>
-                        <p class="card-text">Access skilled mechanics for any car repair needs, from engine work to electrical systems.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="display-5 mb-3 text-primary">
-                            <i class="bi bi-speedometer"></i>
-                        </div>
-                        <h5 class="card-title">Diagnostics</h5>
-                        <p class="card-text">Professional diagnostic services to identify issues and recommend the right repairs.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="display-5 mb-3 text-primary">
-                            <i class="bi bi-car-front"></i>
-                        </div>
-                        <h5 class="card-title">Maintenance</h5>
-                        <p class="card-text">Regular maintenance services to keep your vehicle running smoothly and prevent future problems.</p>
-                    </div>
-                </div>
+    <div class="scroll-indicator">
+        <a href="#features" class="text-white">
+            <i class="bi bi-chevron-down"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <h2 class="display-5 fw-bold mb-3">Why Choose AutoFix?</h2>
+                <p class="lead text-muted">Experience the difference with our comprehensive auto repair platform</p>
             </div>
         </div>
-    </section>
-    
-    <!-- How It Works Section -->
-    <section class="py-5 bg-light rounded">
-        <h2 class="text-center mb-5">How It Works</h2>
         
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0">
-                    <div class="card-body text-center">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
-                            <span class="h4 mb-0">1</span>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Certified Mechanics</h5>
+                    <p class="text-muted">All our mechanics are certified professionals with years of experience and proven track records.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Fast Response</h5>
+                    <p class="text-muted">Get connected with available mechanics in your area within minutes of submitting your request.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Quality Guaranteed</h5>
+                    <p class="text-muted">We guarantee the quality of work with warranty coverage and customer satisfaction promise.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Location Based</h5>
+                    <p class="text-muted">Find mechanics near you with real-time location tracking and distance calculations.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-credit-card"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Transparent Pricing</h5>
+                    <p class="text-muted">No hidden fees. Get upfront pricing with detailed breakdown of costs before service begins.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">24/7 Support</h5>
+                    <p class="text-muted">Round-the-clock customer support to assist you with any questions or emergency situations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <h2 class="display-5 fw-bold mb-3">Our Services</h2>
+                <p class="lead text-muted">Comprehensive automotive solutions for every need</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-card h-100">
+                    <div class="service-image">
+                        <img src="https://images.unsplash.com/photo-1486754735734-325b5831c3ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                             class="img-fluid" alt="Car Engine Repair">
+                        <div class="service-overlay">
+                            <i class="bi bi-tools"></i>
                         </div>
-                        <h5 class="card-title">Request Service</h5>
-                        <p class="card-text">Describe your vehicle issue and submit a service request through our platform.</p>
+                    </div>
+                    <div class="service-content">
+                        <h5 class="fw-semibold mb-3">Engine Repair</h5>
+                        <p class="text-muted mb-3">Expert engine diagnostics and repair services for all vehicle makes and models.</p>
+                        <ul class="service-features">
+                            <li><i class="bi bi-check text-success me-2"></i>Engine diagnostics</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Performance tuning</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Component replacement</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0">
-                    <div class="card-body text-center">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
-                            <span class="h4 mb-0">2</span>
+            
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-card h-100">
+                    <div class="service-image">
+                        <img src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                             class="img-fluid" alt="Brake Service">
+                        <div class="service-overlay">
+                            <i class="bi bi-disc"></i>
                         </div>
-                        <h5 class="card-title">Get Connected</h5>
-                        <p class="card-text">Qualified mechanics in your area will respond to your service request.</p>
+                    </div>
+                    <div class="service-content">
+                        <h5 class="fw-semibold mb-3">Brake Service</h5>
+                        <p class="text-muted mb-3">Complete brake system inspection, maintenance, and repair for your safety.</p>
+                        <ul class="service-features">
+                            <li><i class="bi bi-check text-success me-2"></i>Brake pad replacement</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Rotor resurfacing</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Brake fluid service</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0">
-                    <div class="card-body text-center">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
-                            <span class="h4 mb-0">3</span>
+            
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-card h-100">
+                    <div class="service-image">
+                        <img src="https://images.unsplash.com/photo-1609010697446-11f2155278f0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                             class="img-fluid" alt="Electrical Systems">
+                        <div class="service-overlay">
+                            <i class="bi bi-lightning"></i>
                         </div>
-                        <h5 class="card-title">Get It Fixed</h5>
-                        <p class="card-text">Schedule the service and get your vehicle fixed by a trusted professional.</p>
+                    </div>
+                    <div class="service-content">
+                        <h5 class="fw-semibold mb-3">Electrical Systems</h5>
+                        <p class="text-muted mb-3">Advanced electrical diagnostics and repair for modern vehicle systems.</p>
+                        <ul class="service-features">
+                            <li><i class="bi bi-check text-success me-2"></i>Battery testing</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Alternator service</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Wiring repair</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-5 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+                <p class="lead opacity-90">Get your car fixed in three simple steps</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="process-step text-center">
+                    <div class="step-number">
+                        <span>1</span>
+                    </div>
+                    <div class="step-icon">
+                        <i class="bi bi-clipboard-plus"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Submit Request</h5>
+                    <p class="opacity-90">Describe your vehicle issue and location. Upload photos if needed for better assessment.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="process-step text-center">
+                    <div class="step-number">
+                        <span>2</span>
+                    </div>
+                    <div class="step-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Get Matched</h5>
+                    <p class="opacity-90">Qualified mechanics in your area review and respond to your service request with quotes.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="process-step text-center">
+                    <div class="step-number">
+                        <span>3</span>
+                    </div>
+                    <div class="step-icon">
+                        <i class="bi bi-wrench"></i>
+                    </div>
+                    <h5 class="fw-semibold mb-3">Get Service</h5>
+                    <p class="opacity-90">Choose your preferred mechanic, schedule the service, and get your vehicle fixed professionally.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <h2 class="display-5 fw-bold mb-3">What Our Customers Say</h2>
+                <p class="lead text-muted">Real feedback from satisfied customers</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars mb-3">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                    <p class="testimonial-text">"AutoFix saved me time and money. Found a great mechanic who fixed my car the same day. Highly recommended!"</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b1e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" 
+                             class="author-avatar" alt="Sarah Johnson">
+                        <div>
+                            <h6 class="mb-0">Sarah Johnson</h6>
+                            <small class="text-muted">Happy Customer</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars mb-3">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                    <p class="testimonial-text">"As a mechanic, AutoFix helps me connect with customers efficiently. Great platform for growing my business."</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" 
+                             class="author-avatar" alt="Mike Rodriguez">
+                        <div>
+                            <h6 class="mb-0">Mike Rodriguez</h6>
+                            <small class="text-muted">Certified Mechanic</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars mb-3">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                    <p class="testimonial-text">"Transparent pricing and quality service. The mechanic explained everything clearly and fixed the issue perfectly."</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" 
+                             class="author-avatar" alt="David Chen">
+                        <div>
+                            <h6 class="mb-0">David Chen</h6>
+                            <small class="text-muted">Satisfied Customer</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section id="contact" class="py-5 bg-dark text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-right">
+                <h2 class="display-6 fw-bold mb-3">Ready to Get Started?</h2>
+                <p class="lead mb-0">Join thousands of satisfied customers and mechanics on our platform.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end" data-aos="fade-left">
+                @if (!isAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Register" asp-route-role="Client" class="btn btn-warning btn-lg px-4 py-3 fw-semibold">
+                        <i class="bi bi-rocket me-2"></i>Get Started Now
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Orders" asp-action="CreateOrder" class="btn btn-warning btn-lg px-4 py-3 fw-semibold">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Order
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</section>

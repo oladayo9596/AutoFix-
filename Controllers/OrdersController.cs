@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace AutoFix.Controllers
 {
@@ -44,12 +45,6 @@ namespace AutoFix.Controllers
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> CreateOrder(ClientOrder order)
         {
-            if (!ModelState.IsValid)
-            {
-                TempData["ErrorMessage"] = "Please fill in all required fields correctly.";
-                return View(order);
-            }
-
             try
             {
                 // Set client info
@@ -68,25 +63,53 @@ namespace AutoFix.Controllers
                     order = new ClientOrder();
                 }
                 
-                // Validate required fields
+                // Manual validation of required fields with clear error messages
+                bool isValid = true;
+                
                 if (string.IsNullOrWhiteSpace(order.ServiceType))
                 {
                     ModelState.AddModelError("ServiceType", "Service type is required.");
-                    TempData["ErrorMessage"] = "Service type is required.";
-                    return View(order);
+                    isValid = false;
                 }
 
                 if (string.IsNullOrWhiteSpace(order.Description))
                 {
                     ModelState.AddModelError("Description", "Description is required.");
-                    TempData["ErrorMessage"] = "Service description is required.";
-                    return View(order);
+                    isValid = false;
+                }
+                else if (order.Description.Length < 10)
+                {
+                    ModelState.AddModelError("Description", "Description must be at least 10 characters long.");
+                    isValid = false;
                 }
 
                 if (string.IsNullOrWhiteSpace(order.Location))
                 {
                     ModelState.AddModelError("Location", "Service location is required.");
-                    TempData["ErrorMessage"] = "Service location is required.";
+                    isValid = false;
+                }
+                
+                // Validate scheduled time
+                if (!order.ScheduledTime.HasValue)
+                {
+                    ModelState.AddModelError("ScheduledTime", "Scheduled time is required.");
+                    isValid = false;
+                }
+                else if (order.ScheduledTime.Value <= DateTime.Now)
+                {
+                    ModelState.AddModelError("ScheduledTime", "Scheduled time must be in the future.");
+                    isValid = false;
+                }
+                
+                if (!isValid)
+                {
+                    // Get all error messages for logging
+                    var errorMessages = string.Join("; ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+                    
+                    _logger.LogWarning("Order validation failed: {ErrorMessages}", errorMessages);
+                    TempData["ErrorMessage"] = "Please correct the following validation errors.";
                     return View(order);
                 }
                 
@@ -116,12 +139,19 @@ namespace AutoFix.Controllers
                 TempData["ErrorMessage"] = $"Validation error: {argEx.Message}";
                 ModelState.AddModelError("", argEx.Message);
                 return View(order);
-            }
-            catch (InvalidOperationException opEx)
+            }            catch (InvalidOperationException opEx)
             {
                 _logger.LogError(opEx, "Database error creating order for client {ClientId}", User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 TempData["ErrorMessage"] = "There was a problem connecting to the database. Please try again later.";
                 ModelState.AddModelError("", "Database connection error. Please try again.");
+                
+                // Log additional debug info
+                _logger.LogWarning("Order details: ServiceType={ServiceType}, Description={Description}, ScheduledTime={ScheduledTime}, Location={Location}",
+                    order?.ServiceType ?? "null",
+                    order?.Description?.Length > 0 ? $"({order.Description.Length} chars)" : "null",
+                    order?.ScheduledTime?.ToString() ?? "null",
+                    order?.Location ?? "null");
+                
                 return View(order);
             }
             catch (Exception ex)
@@ -129,6 +159,23 @@ namespace AutoFix.Controllers
                 _logger.LogError(ex, "Unexpected error creating order for client {ClientId}", User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 TempData["ErrorMessage"] = "An unexpected error occurred while creating your service request. Please try again.";
                 ModelState.AddModelError("", "An error occurred while creating your order. Please try again.");
+                
+                // Log model state errors
+                if (!ModelState.IsValid)
+                {
+                    foreach (var state in ModelState)
+                    {
+                        if (state.Value.Errors.Count > 0)
+                        {
+                            foreach (var error in state.Value.Errors)
+                            {
+                                _logger.LogWarning("Validation error for {Property}: {Error}", 
+                                    state.Key, error.ErrorMessage);
+                            }
+                        }
+                    }
+                }
+                
                 return View(order);
             }
         }
@@ -360,9 +407,63 @@ namespace AutoFix.Controllers
                 return View("MyOrders", orders);
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error filtering orders");
+            {                _logger.LogError(ex, "Error filtering orders");
                 TempData["ErrorMessage"] = "An error occurred while filtering your orders";
+                return RedirectToAction(nameof(MyOrders));
+            }
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Client")]
+        public async Task<IActionResult> CancelOrder(string orderId)
+        {
+            try
+            {
+                var clientId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(clientId))
+                {
+                    _logger.LogWarning("Client ID not found in claims when cancelling order");
+                    return RedirectToAction("Login", "Account");
+                }
+                
+                if (string.IsNullOrEmpty(orderId))
+                {
+                    _logger.LogWarning("Order ID is null or empty when cancelling order");
+                    return BadRequest("Order ID is required");
+                }
+
+                var result = await _orderService.CancelOrderAsync(orderId, clientId);
+                
+                if (result)
+                {
+                    _logger.LogInformation("Order {OrderId} successfully cancelled by client {ClientId}", orderId, clientId);
+                    TempData["SuccessMessage"] = "Service request cancelled successfully!";
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to cancel order {OrderId} by client {ClientId}", orderId, clientId);
+                    TempData["WarningMessage"] = "Unable to cancel the service request. It may have already been accepted or processed.";
+                }
+                
+                return RedirectToAction(nameof(MyOrders));
+            }
+            catch (ArgumentException argEx)
+            {
+                _logger.LogError(argEx, "Validation error cancelling order {OrderId}", orderId);
+                TempData["ErrorMessage"] = $"Validation error: {argEx.Message}";
+                return RedirectToAction(nameof(MyOrders));
+            }
+            catch (InvalidOperationException opEx)
+            {
+                _logger.LogError(opEx, "Database error cancelling order {OrderId}", orderId);
+                TempData["ErrorMessage"] = "There was a problem connecting to the database. Please try again later.";
+                return RedirectToAction(nameof(MyOrders));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error cancelling order {OrderId}", orderId);
+                TempData["ErrorMessage"] = "An unexpected error occurred while cancelling your service request. Please try again.";
                 return RedirectToAction(nameof(MyOrders));
             }
         }

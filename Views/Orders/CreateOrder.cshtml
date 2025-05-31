@@ -41,8 +41,11 @@
             <div class="card">
                 <div class="card-body">
                     <form asp-action="CreateOrder" method="post" id="createOrderForm">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>                        <div class="form-group mb-3">
-                            <label asp-for="ServiceType" class="form-label">Service Type</label>
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>                        <!-- Display validation summary at the top -->
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="ServiceType" class="form-label">Service Type <span class="text-danger">*</span></label>
                             <select asp-for="ServiceType" class="form-select" id="ServiceType" required>
                                 <option value="" selected disabled>-- Select a Service Type --</option>
                                 <option value="Oil Change">Oil Change</option>
@@ -58,22 +61,22 @@
                                 <option value="Emergency Roadside">Emergency Roadside</option>
                                 <option value="Other">Other (Please Specify)</option>
                             </select>
+                            <div class="form-text">Select the type of service you need</div>
                             <span asp-validation-for="ServiceType" class="text-danger"></span>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label asp-for="Description" class="form-label">Description of Problem</label>
-                            <textarea asp-for="Description" class="form-control" id="Description" rows="4" required maxlength="500"></textarea>
+                            <label asp-for="Description" class="form-label">Description of Problem <span class="text-danger">*</span></label>
+                            <textarea asp-for="Description" class="form-control" id="Description" rows="4" required minlength="10" maxlength="500"></textarea>
                             <div class="form-text">Please describe the issue in detail (minimum 10 characters)</div>
                             <span asp-validation-for="Description" class="text-danger"></span>
-                        </div>
-
-                        <div class="row mb-3">
+                            <div id="descriptionCounter" class="small mt-1"></div>
+                        </div>                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label asp-for="ScheduledTime" class="form-label">Preferred Date & Time</label>
+                                    <label asp-for="ScheduledTime" class="form-label">Preferred Date & Time <span class="text-danger">*</span></label>
                                     <input asp-for="ScheduledTime" type="datetime-local" class="form-control" id="ScheduledTime" required>
-                                    <div class="form-text">Select when you'd like the service performed</div>
+                                    <div class="form-text">Select when you'd like the service performed (must be in the future)</div>
                                     <span asp-validation-for="ScheduledTime" class="text-danger"></span>
                                 </div>
                             </div>
@@ -91,7 +94,7 @@
                         </div>
 
                         <div class="form-group mb-4">
-                            <label asp-for="Location" class="form-label">Service Location</label>
+                            <label asp-for="Location" class="form-label">Service Location <span class="text-danger">*</span></label>
                             <input asp-for="Location" type="text" class="form-control" id="Location" required>
                             <div class="form-text">Enter your address or place where the service should be performed</div>
                             <span asp-validation-for="Location" class="text-danger"></span>
@@ -137,18 +140,34 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}    <script>
         $(document).ready(function() {
+            console.log('CreateOrder form ready');
+            
+            // Check if jQuery validation is loaded
+            if ($.validator) {
+                console.log('jQuery validator is loaded');
+            } else {
+                console.warn('jQuery validator is not loaded properly');
+            }
+            
+            // Log initial form state
+            logFormState();
+            
             // Form submission handling
             $('#createOrderForm').on('submit', function(e) {
+                console.log('Form submission triggered');
                 var isValid = true;
                 var errorMessages = [];
 
-                // Clear previous validation
+                // Clear previous custom validation
                 $('.is-invalid').removeClass('is-invalid');
-                $('.text-danger').not('[data-valmsg-summary]').remove();
+                $('.text-danger').not('[data-valmsg-summary], [data-valmsg-for]').remove();
+                $('.alert-danger').not('.validation-summary-errors').remove();
 
+                // Log form values
+                logFormState();
+                
                 // Validate Service Type
                 var serviceType = $('#ServiceType').val();
                 if (!serviceType || serviceType === '') {
@@ -159,7 +178,11 @@
 
                 // Validate Description
                 var description = $('#Description').val().trim();
-                if (!description || description.length < 10) {
+                if (!description) {
+                    $('#Description').addClass('is-invalid');
+                    errorMessages.push('Description is required');
+                    isValid = false;
+                } else if (description.length < 10) {
                     $('#Description').addClass('is-invalid');
                     errorMessages.push('Description must be at least 10 characters long');
                     isValid = false;
@@ -182,6 +205,8 @@
                 } else {
                     var selectedDate = new Date(scheduledTime);
                     var now = new Date();
+                    console.log('Selected date:', selectedDate);
+                    console.log('Current date:', now);
                     if (selectedDate <= now) {
                         $('#ScheduledTime').addClass('is-invalid');
                         errorMessages.push('Scheduled time must be in the future');
@@ -191,6 +216,7 @@
 
                 if (!isValid) {
                     e.preventDefault();
+                    console.warn('Form validation failed:', errorMessages);
                     
                     // Show error summary
                     var errorHtml = '<div class="alert alert-danger"><ul class="mb-0">';
@@ -199,29 +225,61 @@
                     });
                     errorHtml += '</ul></div>';
                     
-                    $('.card-body').prepend(errorHtml);
+                    $('.card-body:first').prepend(errorHtml);
                     
                     // Scroll to top
                     $('html, body').animate({ scrollTop: 0 }, 500);
                     return false;
-                }
-
-                // Show loading state
+                } else {
+                    console.log('Form validation passed, submitting form');
+                }                // Show loading state
                 var submitBtn = $('#submitBtn');
                 submitBtn.prop('disabled', true);
                 submitBtn.find('.btn-text').addClass('d-none');
                 submitBtn.find('.spinner-border').removeClass('d-none');
                 submitBtn.find('.loading-text').removeClass('d-none');
+                
+                // Save form data to session storage to preserve in case of page refresh
+                try {
+                    sessionStorage.setItem('createOrderFormData', JSON.stringify({
+                        serviceType: $('#ServiceType').val(),
+                        description: $('#Description').val(),
+                        scheduledTime: $('#ScheduledTime').val(),
+                        location: $('#Location').val(),
+                        estimatedPrice: $('#EstimatedPrice').val(),
+                        notes: $('#Notes').val()
+                    }));
+                } catch (e) {
+                    console.error('Error saving form data:', e);
+                }
 
                 return true;
             });
+            
+            // Helper function to log form state for debugging
+            function logFormState() {
+                console.log('Form state:', {
+                    serviceType: $('#ServiceType').val(),
+                    description: $('#Description').val() || '(empty)',
+                    descriptionLength: $('#Description').val()?.length || 0,
+                    location: $('#Location').val() || '(empty)',
+                    scheduledTime: $('#ScheduledTime').val() || '(empty)',
+                    estimatedPrice: $('#EstimatedPrice').val() || 0,
+                    notes: $('#Notes').val() || '(empty)',
+                    modelErrors: $('.validation-summary-errors li').map(function() { return $(this).text(); }).get()
+                });
+            }
 
             // Auto-dismiss alerts after 5 seconds
             setTimeout(function() {
                 $('.alert-dismissible').alert('close');
             }, 5000);
-
-            // Set minimum date/time to current date/time
+            
+            // Check for any server-side errors
+            if ($('.validation-summary-errors').length > 0) {
+                console.warn('Server-side validation errors detected:', 
+                    $('.validation-summary-errors li').map(function() { return $(this).text(); }).get());
+            }            // Set minimum date/time to current date/time
             var now = new Date();
             var year = now.getFullYear();
             var month = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -230,24 +288,56 @@
             var minutes = now.getMinutes().toString().padStart(2, '0');
             var currentDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
             $('#ScheduledTime').attr('min', currentDateTime);
-
-            // Character counter for description
-            $('#Description').on('input', function() {
-                var length = $(this).val().length;
-                var counter = $(this).next('.form-text');
-                if (counter.length === 0) {
-                    counter = $('<div class="form-text"></div>').insertAfter($(this));
+            
+            // Restore form data if previously saved
+            try {
+                var savedData = sessionStorage.getItem('createOrderFormData');
+                if (savedData) {
+                    console.log('Restoring saved form data');
+                    var formData = JSON.parse(savedData);
+                    
+                    // Only restore if the form is empty (page was refreshed)
+                    if (!$('#Description').val() && formData.description) {
+                        $('#ServiceType').val(formData.serviceType);
+                        $('#Description').val(formData.description);
+                        // For scheduled time, we want to make sure it's still in the future
+                        var savedDate = new Date(formData.scheduledTime);
+                        if (savedDate > now) {
+                            $('#ScheduledTime').val(formData.scheduledTime);
+                        }
+                        $('#Location').val(formData.location);
+                        $('#EstimatedPrice').val(formData.estimatedPrice);
+                        $('#Notes').val(formData.notes);
+                        
+                        // Update counter
+                        updateDescriptionCounter();
+                        
+                        // Clear saved data
+                        sessionStorage.removeItem('createOrderFormData');
+                    }
                 }
+            } catch (e) {
+                console.error('Error restoring form data:', e);
+            }// Enhanced character counter for description
+            function updateDescriptionCounter() {
+                var length = $('#Description').val().length;
+                var counter = $('#descriptionCounter');
                 counter.text('Characters: ' + length + '/500 (minimum 10)');
                 
                 if (length < 10) {
-                    counter.addClass('text-danger');
+                    counter.removeClass('text-warning text-success').addClass('text-danger');
                 } else if (length < 50) {
-                    counter.removeClass('text-danger').addClass('text-warning');
+                    counter.removeClass('text-danger text-success').addClass('text-warning');
                 } else {
                     counter.removeClass('text-danger text-warning').addClass('text-success');
                 }
-            });
+            }
+            
+            // Initialize counter
+            updateDescriptionCounter();
+            
+            // Update counter on input
+            $('#Description').on('input', updateDescriptionCounter);
         });
     </script>
 }
