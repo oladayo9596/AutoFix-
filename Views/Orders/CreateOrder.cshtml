@@ -4,148 +4,366 @@
     ViewData["Title"] = "Create Service Request";
 }
 
-<div class="container mt-4">
-    <h1>Create Service Request</h1>
-    <hr />
-
-    <!-- Success/Error Messages -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i>
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["WarningMessage"] != null)
-    {
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            @TempData["WarningMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <form asp-action="CreateOrder" method="post" id="createOrderForm">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>                        <!-- Display validation summary at the top -->
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        
-                        <div class="form-group mb-3">
-                            <label asp-for="ServiceType" class="form-label">Service Type <span class="text-danger">*</span></label>
-                            <select asp-for="ServiceType" class="form-select" id="ServiceType" required>
-                                <option value="" selected disabled>-- Select a Service Type --</option>
-                                <option value="Oil Change">Oil Change</option>
-                                <option value="Tune-Up">Tune-Up</option>
-                                <option value="Brake Service">Brake Service</option>
-                                <option value="Tire Service">Tire Service</option>
-                                <option value="Battery Replacement">Battery Replacement</option>
-                                <option value="Engine Repair">Engine Repair</option>
-                                <option value="Transmission Service">Transmission Service</option>
-                                <option value="Electrical System">Electrical System</option>
-                                <option value="A/C Service">A/C Service</option>
-                                <option value="Diagnostics">Diagnostics</option>
-                                <option value="Emergency Roadside">Emergency Roadside</option>
-                                <option value="Other">Other (Please Specify)</option>
-                            </select>
-                            <div class="form-text">Select the type of service you need</div>
-                            <span asp-validation-for="ServiceType" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label asp-for="Description" class="form-label">Description of Problem <span class="text-danger">*</span></label>
-                            <textarea asp-for="Description" class="form-control" id="Description" rows="4" required minlength="10" maxlength="500"></textarea>
-                            <div class="form-text">Please describe the issue in detail (minimum 10 characters)</div>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                            <div id="descriptionCounter" class="small mt-1"></div>
-                        </div>                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label asp-for="ScheduledTime" class="form-label">Preferred Date & Time <span class="text-danger">*</span></label>
-                                    <input asp-for="ScheduledTime" type="datetime-local" class="form-control" id="ScheduledTime" required>
-                                    <div class="form-text">Select when you'd like the service performed (must be in the future)</div>
-                                    <span asp-validation-for="ScheduledTime" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label asp-for="EstimatedPrice" class="form-label">Budget (Optional)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input asp-for="EstimatedPrice" type="number" class="form-control" id="EstimatedPrice" min="0" step="0.01">
-                                    </div>
-                                    <div class="form-text">Your estimated budget for this service</div>
-                                    <span asp-validation-for="EstimatedPrice" class="text-danger"></span>
-                                </div>
+<!-- Hero Section -->
+<section class="create-order-hero bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="hero-content">
+                    <h1 class="display-5 fw-bold mb-3">
+                        <i class="bi bi-plus-circle me-3"></i>Create Service Request
+                    </h1>
+                    <p class="lead opacity-90 mb-4">
+                        Tell us what your vehicle needs and connect with qualified mechanics in your area
+                    </p>
+                    
+                    <!-- Process Steps -->
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="step-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <i class="bi bi-1-circle text-warning fs-3 mb-2"></i>
+                                <small class="text-white-50 d-block">Describe Issue</small>
                             </div>
                         </div>
-
-                        <div class="form-group mb-4">
-                            <label asp-for="Location" class="form-label">Service Location <span class="text-danger">*</span></label>
-                            <input asp-for="Location" type="text" class="form-control" id="Location" required>
-                            <div class="form-text">Enter your address or place where the service should be performed</div>
-                            <span asp-validation-for="Location" class="text-danger"></span>
+                        <div class="col-6 col-md-3">
+                            <div class="step-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <i class="bi bi-2-circle text-warning fs-3 mb-2"></i>
+                                <small class="text-white-50 d-block">Set Schedule</small>
+                            </div>
                         </div>
-
-                        <div class="form-group mb-4">
-                            <label asp-for="Notes" class="form-label">Additional Notes (Optional)</label>
-                            <textarea asp-for="Notes" class="form-control" id="Notes" rows="3"></textarea>
-                            <div class="form-text">Any additional information for the mechanic</div>
-                        </div><div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <span class="btn-text">Submit Service Request</span>
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                <span class="loading-text d-none">Creating Request...</span>
-                            </button>
-                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        <div class="col-6 col-md-3">
+                            <div class="step-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <i class="bi bi-3-circle text-warning fs-3 mb-2"></i>
+                                <small class="text-white-50 d-block">Get Matched</small>
+                            </div>
                         </div>
-                    </form>
+                        <div class="col-6 col-md-3">
+                            <div class="step-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <i class="bi bi-4-circle text-warning fs-3 mb-2"></i>
+                                <small class="text-white-50 d-block">Service Done</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <h5 class="card-title">Service Request Information</h5>
-                    <p class="card-text">
-                        Please provide detailed information about the service you need. The more details you provide, 
-                        the better the mechanics can understand your requirements.
-                    </p>
-                    <hr>
-                    <h6>What happens next?</h6>
-                    <ol>
-                        <li>Your service request will be visible to qualified mechanics</li>
-                        <li>Interested mechanics will accept your request</li>
-                        <li>You'll be notified when a mechanic accepts your request</li>
-                        <li>You can communicate with the mechanic to finalize details</li>
-                    </ol>
+            <div class="col-lg-4 text-center" data-aos="fade-left">
+                <div class="hero-illustration">
+                    <div class="illustration-circle bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 200px; height: 200px;">
+                        <i class="bi bi-tools text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <p class="mt-3 opacity-75">Professional automotive services at your fingertips</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <!-- Alert Messages -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert" data-aos="fade-down">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                    <div>
+                        <strong>Success!</strong> @TempData["SuccessMessage"]
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert" data-aos="fade-down">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                    <div>
+                        <strong>Error!</strong> @TempData["ErrorMessage"]
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert" data-aos="fade-down">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-circle-fill me-3 fs-4"></i>
+                    <div>
+                        <strong>Notice!</strong> @TempData["WarningMessage"]
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden" data-aos="fade-up">
+                    <div class="card-header bg-primary text-white p-4">
+                        <div class="d-flex align-items-center">
+                            <div class="form-icon bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="bi bi-clipboard-plus text-white fs-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-1 fw-bold">Service Request Details</h4>
+                                <p class="mb-0 opacity-75">Fill out the form below to request automotive service</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <form asp-action="CreateOrder" method="post" id="createOrderForm">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                            
+                            <!-- Service Information Section -->
+                            <div class="form-section mb-4">
+                                <div class="section-header mb-3">
+                                    <h5 class="fw-bold text-primary mb-1">
+                                        <i class="bi bi-gear me-2"></i>Service Information
+                                    </h5>
+                                    <p class="text-muted small mb-0">What type of service do you need?</p>
+                                </div>
+                                
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <select asp-for="ServiceType" class="form-select" id="ServiceType" required>
+                                                <option value="" selected disabled>Choose service type...</option>
+                                                <option value="Oil Change">🛢️ Oil Change</option>
+                                                <option value="Tune-Up">🔧 Tune-Up</option>
+                                                <option value="Brake Service">🛑 Brake Service</option>
+                                                <option value="Tire Service">🛞 Tire Service</option>
+                                                <option value="Battery Replacement">🔋 Battery Replacement</option>
+                                                <option value="Engine Repair">⚙️ Engine Repair</option>
+                                                <option value="Transmission Service">🚗 Transmission Service</option>
+                                                <option value="Electrical System">⚡ Electrical System</option>
+                                                <option value="A/C Service">❄️ A/C Service</option>
+                                                <option value="Diagnostics">🔍 Diagnostics</option>
+                                                <option value="Emergency Roadside">🚨 Emergency Roadside</option>
+                                                <option value="Other">❓ Other (Please Specify)</option>
+                                            </select>
+                                            <label for="ServiceType">Service Type <span class="text-danger">*</span></label>
+                                            <span asp-validation-for="ServiceType" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <textarea asp-for="Description" class="form-control" id="Description" style="height: 120px" required minlength="10" maxlength="500"></textarea>
+                                            <label for="Description">Problem Description <span class="text-danger">*</span></label>
+                                            <span asp-validation-for="Description" class="text-danger"></span>
+                                        </div>
+                                        <div id="descriptionCounter" class="form-text mt-2 d-flex justify-content-between">
+                                            <span class="counter-text">Describe your issue in detail (minimum 10 characters)</span>
+                                            <span class="counter-numbers">0/500</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Schedule & Location Section -->
+                            <div class="form-section mb-4">
+                                <div class="section-header mb-3">
+                                    <h5 class="fw-bold text-primary mb-1">
+                                        <i class="bi bi-calendar-event me-2"></i>Schedule & Location
+                                    </h5>
+                                    <p class="text-muted small mb-0">When and where should the service be performed?</p>
+                                </div>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input asp-for="ScheduledTime" type="datetime-local" class="form-control" id="ScheduledTime" required>
+                                            <label for="ScheduledTime">Preferred Date & Time <span class="text-danger">*</span></label>
+                                            <span asp-validation-for="ScheduledTime" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-text mt-2">
+                                            <i class="bi bi-info-circle me-1"></i>Service must be scheduled for a future date
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input asp-for="EstimatedPrice" type="number" class="form-control" id="EstimatedPrice" min="0" step="0.01">
+                                            <label for="EstimatedPrice">💰 Budget (Optional)</label>
+                                            <span asp-validation-for="EstimatedPrice" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-text mt-2">
+                                            <i class="bi bi-info-circle me-1"></i>Your estimated budget helps mechanics provide accurate quotes
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-floating">
+                                            <input asp-for="Location" type="text" class="form-control" id="Location" required>
+                                            <label for="Location">📍 Service Location <span class="text-danger">*</span></label>
+                                            <span asp-validation-for="Location" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-text mt-2">
+                                            <i class="bi bi-info-circle me-1"></i>Enter your address or where the service should be performed
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Information Section -->
+                            <div class="form-section mb-4">
+                                <div class="section-header mb-3">
+                                    <h5 class="fw-bold text-primary mb-1">
+                                        <i class="bi bi-chat-square-text me-2"></i>Additional Information
+                                    </h5>
+                                    <p class="text-muted small mb-0">Any additional details for the mechanic</p>
+                                </div>
+                                
+                                <div class="form-floating">
+                                    <textarea asp-for="Notes" class="form-control" id="Notes" style="height: 100px"></textarea>
+                                    <label for="Notes">📝 Additional Notes (Optional)</label>
+                                </div>
+                                <div class="form-text mt-2">
+                                    <i class="bi bi-lightbulb me-1"></i>Include vehicle make/model, special requirements, or access instructions
+                                </div>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="form-actions pt-3 border-top">
+                                <div class="d-grid gap-3">
+                                    <button type="submit" class="btn btn-primary btn-lg fw-semibold" id="submitBtn">
+                                        <span class="btn-content">
+                                            <i class="bi bi-send me-2"></i>
+                                            <span class="btn-text">Submit Service Request</span>
+                                        </span>
+                                        <span class="loading-content d-none">
+                                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                            <span class="loading-text">Creating Request...</span>
+                                        </span>
+                                    </button>
+                                    
+                                    <div class="text-center">
+                                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-left me-2"></i>Cancel & Go Back
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Information -->
+            <div class="col-lg-4">
+                <!-- Process Information Card -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-header bg-light border-0 p-4">
+                        <h5 class="fw-bold text-primary mb-0">
+                            <i class="bi bi-info-circle me-2"></i>How It Works
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="process-steps">
+                            <div class="step-item d-flex mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px;">
+                                    <small class="fw-bold">1</small>
+                                </div>
+                                <div>
+                                    <h6 class="fw-semibold mb-1">Submit Request</h6>
+                                    <p class="text-muted small mb-0">Your service request will be visible to qualified mechanics in your area</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item d-flex mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px;">
+                                    <small class="fw-bold">2</small>
+                                </div>
+                                <div>
+                                    <h6 class="fw-semibold mb-1">Get Matched</h6>
+                                    <p class="text-muted small mb-0">Interested mechanics will accept your request and provide quotes</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item d-flex mb-3">
+                                <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px;">
+                                    <small class="fw-bold">3</small>
+                                </div>
+                                <div>
+                                    <h6 class="fw-semibold mb-1">Stay Connected</h6>
+                                    <p class="text-muted small mb-0">You'll be notified when a mechanic accepts your request</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item d-flex">
+                                <div class="step-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px;">
+                                    <small class="fw-bold">4</small>
+                                </div>
+                                <div>
+                                    <h6 class="fw-semibold mb-1">Service Complete</h6>
+                                    <p class="text-muted small mb-0">Communicate with your mechanic to finalize all service details</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tips Card -->
+                <div class="card border-0 shadow-sm rounded-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card-header bg-warning bg-opacity-10 border-0 p-4">
+                        <h5 class="fw-bold text-warning mb-0">
+                            <i class="bi bi-lightbulb me-2"></i>Helpful Tips
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="tips-list">
+                            <div class="tip-item mb-3">
+                                <h6 class="fw-semibold mb-1">
+                                    <i class="bi bi-check-circle text-success me-2"></i>Be Specific
+                                </h6>
+                                <p class="text-muted small mb-0">Provide detailed descriptions of symptoms and issues for better quotes</p>
+                            </div>
+                            
+                            <div class="tip-item mb-3">
+                                <h6 class="fw-semibold mb-1">
+                                    <i class="bi bi-check-circle text-success me-2"></i>Set Realistic Times
+                                </h6>
+                                <p class="text-muted small mb-0">Allow flexible scheduling to get more mechanic responses</p>
+                            </div>
+                            
+                            <div class="tip-item">
+                                <h6 class="fw-semibold mb-1">
+                                    <i class="bi bi-check-circle text-success me-2"></i>Include Vehicle Info
+                                </h6>
+                                <p class="text-muted small mb-0">Mention your vehicle's make, model, and year in the notes section</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}    <script>
-        $(document).ready(function() {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS animations
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 600,
+                    easing: 'ease-out-cubic',
+                    once: true
+                });
+            }
+            
             console.log('CreateOrder form ready');
             
             // Check if jQuery validation is loaded
-            if ($.validator) {
+            if (typeof $ !== 'undefined' && $.validator) {
                 console.log('jQuery validator is loaded');
             } else {
                 console.warn('jQuery validator is not loaded properly');
@@ -218,28 +436,39 @@
                     e.preventDefault();
                     console.warn('Form validation failed:', errorMessages);
                     
-                    // Show error summary
-                    var errorHtml = '<div class="alert alert-danger"><ul class="mb-0">';
+                    // Show error summary with modern styling
+                    var errorHtml = '<div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 shadow-sm"><div class="d-flex align-items-start"><i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i><div><strong>Please fix the following errors:</strong><ul class="mb-0 mt-2">';
                     errorMessages.forEach(function(msg) {
                         errorHtml += '<li>' + msg + '</li>';
                     });
-                    errorHtml += '</ul></div>';
+                    errorHtml += '</ul></div></div><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
                     
                     $('.card-body:first').prepend(errorHtml);
                     
-                    // Scroll to top
-                    $('html, body').animate({ scrollTop: 0 }, 500);
+                    // Scroll to top with smooth animation
+                    $('html, body').animate({ scrollTop: $('.card').offset().top - 100 }, 500);
+                    
+                    // Add shake animation to invalid fields
+                    $('.is-invalid').addClass('animate__animated animate__headShake');
+                    setTimeout(() => {
+                        $('.is-invalid').removeClass('animate__animated animate__headShake');
+                    }, 1000);
+                    
                     return false;
                 } else {
                     console.log('Form validation passed, submitting form');
-                }                // Show loading state
+                }
+
+                // Show loading state with smooth transition
                 var submitBtn = $('#submitBtn');
                 submitBtn.prop('disabled', true);
-                submitBtn.find('.btn-text').addClass('d-none');
-                submitBtn.find('.spinner-border').removeClass('d-none');
-                submitBtn.find('.loading-text').removeClass('d-none');
+                submitBtn.find('.btn-content').addClass('d-none');
+                submitBtn.find('.loading-content').removeClass('d-none');
                 
-                // Save form data to session storage to preserve in case of page refresh
+                // Add success animation
+                submitBtn.addClass('btn-success').removeClass('btn-primary');
+                
+                // Save form data to session storage
                 try {
                     sessionStorage.setItem('createOrderFormData', JSON.stringify({
                         serviceType: $('#ServiceType').val(),
@@ -279,8 +508,11 @@
             if ($('.validation-summary-errors').length > 0) {
                 console.warn('Server-side validation errors detected:', 
                     $('.validation-summary-errors li').map(function() { return $(this).text(); }).get());
-            }            // Set minimum date/time to current date/time
+            }
+
+            // Set minimum date/time to current date/time
             var now = new Date();
+            now.setMinutes(now.getMinutes() + 30); // Add 30 minutes buffer
             var year = now.getFullYear();
             var month = (now.getMonth() + 1).toString().padStart(2, '0');
             var day = now.getDate().toString().padStart(2, '0');
@@ -296,11 +528,9 @@
                     console.log('Restoring saved form data');
                     var formData = JSON.parse(savedData);
                     
-                    // Only restore if the form is empty (page was refreshed)
                     if (!$('#Description').val() && formData.description) {
                         $('#ServiceType').val(formData.serviceType);
                         $('#Description').val(formData.description);
-                        // For scheduled time, we want to make sure it's still in the future
                         var savedDate = new Date(formData.scheduledTime);
                         if (savedDate > now) {
                             $('#ScheduledTime').val(formData.scheduledTime);
@@ -309,35 +539,251 @@
                         $('#EstimatedPrice').val(formData.estimatedPrice);
                         $('#Notes').val(formData.notes);
                         
-                        // Update counter
                         updateDescriptionCounter();
-                        
-                        // Clear saved data
                         sessionStorage.removeItem('createOrderFormData');
                     }
                 }
             } catch (e) {
                 console.error('Error restoring form data:', e);
-            }// Enhanced character counter for description
+            }
+
+            // Enhanced character counter for description
             function updateDescriptionCounter() {
                 var length = $('#Description').val().length;
-                var counter = $('#descriptionCounter');
-                counter.text('Characters: ' + length + '/500 (minimum 10)');
+                var counter = $('#descriptionCounter .counter-numbers');
+                var counterText = $('#descriptionCounter .counter-text');
+                
+                counter.text(length + '/500');
                 
                 if (length < 10) {
                     counter.removeClass('text-warning text-success').addClass('text-danger');
+                    counterText.text('Minimum 10 characters required');
                 } else if (length < 50) {
                     counter.removeClass('text-danger text-success').addClass('text-warning');
+                    counterText.text('Good start! Add more details for better results');
                 } else {
                     counter.removeClass('text-danger text-warning').addClass('text-success');
+                    counterText.text('Great! Detailed description helps mechanics understand your needs');
                 }
             }
             
-            // Initialize counter
+            // Initialize counter and add input listeners
             updateDescriptionCounter();
-            
-            // Update counter on input
             $('#Description').on('input', updateDescriptionCounter);
+            
+            // Add floating label animation support
+            $('.form-floating input, .form-floating select, .form-floating textarea').on('focus blur', function() {
+                $(this).closest('.form-floating').toggleClass('focused', $(this).is(':focus'));
+            });
+            
+            // Add service type icon animation
+            $('#ServiceType').on('change', function() {
+                var $this = $(this);
+                $this.addClass('animate__animated animate__pulse');
+                setTimeout(() => {
+                    $this.removeClass('animate__animated animate__pulse');
+                }, 500);
+            });
         });
     </script>
 }
+
+<style>
+    .create-order-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .create-order-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.5;
+    }
+    
+    .step-card {
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .step-card:hover {
+        transform: translateY(-2px);
+        
+    }
+    
+    .illustration-circle {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @@keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .form-section {
+        position: relative;
+    }
+    
+    .section-header {
+        border-left: 4px solid var(--bs-primary);
+        padding-left: 1rem;
+        margin-left: 0.5rem;
+    }
+    
+    .form-floating {
+        position: relative;
+    }
+    
+    .form-floating.focused label {
+        color: var(--bs-primary);
+    }
+    
+    .form-floating input:focus,
+    .form-floating select:focus,
+    .form-floating textarea:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .form-actions {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        margin: 0 -1.5rem -1.5rem -1.5rem;
+        padding: 1.5rem;
+        border-radius: 0 0 1rem 1rem;
+    }
+    
+    #submitBtn {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #submitBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(102, 126, 234, 0.3);
+    }
+    
+    #submitBtn:disabled {
+        transform: none;
+    }
+    
+    .process-steps .step-item {
+        position: relative;
+    }
+    
+    .process-steps .step-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 40px;
+        width: 2px;
+        height: calc(100% - 20px);
+        background: linear-gradient(to bottom, var(--bs-primary), transparent);
+        opacity: 0.3;
+    }
+    
+    .step-number {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .tips-list .tip-item {
+        padding: 0.75rem;
+        background: rgba(var(--bs-success-rgb), 0.05);
+        border-radius: 0.5rem;
+        border-left: 3px solid var(--bs-success);
+    }
+    
+    .counter-numbers {
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .alert {
+        animation: slideDown 0.5s ease;
+    }
+    
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Loading button animation */
+    .loading-content .spinner-border {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    /* Floating label improvements */
+    .form-floating > label {
+        transition: all 0.3s ease;
+    }
+    
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .form-floating > .form-select ~ label {
+        opacity: 0.65;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+    
+    /* Custom scrollbar */
+    .card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .card-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .card-body::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+    
+    .card-body::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Form validation styling */
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    /* Responsive improvements */
+    @@media (max-width: 768px) {
+        .create-order-hero .row > div {
+            text-align: center;
+        }
+        
+        .section-header {
+            border-left: none;
+            border-top: 4px solid var(--bs-primary);
+            padding-left: 0;
+            padding-top: 1rem;
+            margin-left: 0;
+        }
+        
+        .form-actions {
+            margin: 0 -1rem -1rem -1rem;
+            padding: 1rem;
+        }
+    }
+</style>

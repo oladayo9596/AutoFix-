@@ -2,110 +2,420 @@
 @using AutoFix.Models
 
 @{
-    ViewData["Title"] = "My Orders";
+    ViewData["Title"] = "My Service Requests";
     string currentFilter = ViewBag.CurrentFilter as string ?? "";
+    var pendingCount = Model.Count(o => o.Status == OrderStatus.Pending);
+    var acceptedCount = Model.Count(o => o.Status == OrderStatus.Accepted);
+    var completedCount = Model.Count(o => o.Status == OrderStatus.Completed);
+    var declinedCount = Model.Count(o => o.Status == OrderStatus.Declined);
 }
 
-<div class="container mt-4">
-    <!-- Success/Error Messages -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i>
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["WarningMessage"] != null)
-    {
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            @TempData["WarningMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>My Service Requests</h1>
-        <a asp-action="CreateOrder" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> New Request
-        </a>
-    </div>
-
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">No service requests yet!</h4>
-            <p>You haven't created any service requests. Click the "New Request" button to get started.</p>
-        </div>
-    }
-    else
-    {
-        <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">                        <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <a asp-action="FilterOrders" class="nav-link @(string.IsNullOrEmpty(currentFilter) ? "active" : "")">All</a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a asp-action="FilterOrders" asp-route-status="Pending" class="nav-link @(currentFilter == "Pending" ? "active" : "")">Pending</a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a asp-action="FilterOrders" asp-route-status="Accepted" class="nav-link @(currentFilter == "Accepted" ? "active" : "")">Active</a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a asp-action="FilterOrders" asp-route-status="Completed" class="nav-link @(currentFilter == "Completed" ? "active" : "")">Completed</a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a asp-action="FilterOrders" asp-route-status="Declined" class="nav-link @(currentFilter == "Declined" ? "active" : "")">Declined</a>
-                            </li>
-                        </ul>
-                        
-                        <div class="tab-content mt-4" id="orderTabsContent">
-                            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
-                                @await Html.PartialAsync("_OrdersList", Model)
+<!-- Hero Section for Orders -->
+<section class="orders-hero bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="hero-content">
+                    <h1 class="display-5 fw-bold mb-3">
+                        <i class="bi bi-clipboard-data me-3"></i>My Service Requests
+                    </h1>
+                    <p class="lead opacity-90 mb-4">
+                        Track and manage all your automotive service requests in one place
+                    </p>
+                    
+                    <!-- Quick Stats -->
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <h4 class="fw-bold text-warning mb-1">@Model.Count()</h4>
+                                <small class="text-white-50">Total Requests</small>
                             </div>
-                            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
-                                @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Pending))
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <h4 class="fw-bold text-warning mb-1">@pendingCount</h4>
+                                <small class="text-white-50">Pending</small>
                             </div>
-                            <div class="tab-pane fade" id="active" role="tabpanel" aria-labelledby="active-tab">
-                                @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Accepted))
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <h4 class="fw-bold text-warning mb-1">@acceptedCount</h4>
+                                <small class="text-white-50">Active</small>
                             </div>
-                            <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
-                                @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Completed))
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card bg-white bg-opacity-20 rounded-3 p-3 text-center">
+                                <h4 class="fw-bold text-warning mb-1">@completedCount</h4>
+                                <small class="text-white-50">Completed</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="col-lg-4 text-center" data-aos="fade-left">
+                <div class="hero-action">
+                    <a asp-action="CreateOrder" class="btn btn-warning btn-lg px-4 py-3 fw-semibold shadow-lg">
+                        <i class="bi bi-plus-circle me-2"></i>New Service Request
+                    </a>
+                    <p class="small text-white-50 mt-2 mb-0">Quick and easy service booking</p>
+                </div>
+            </div>
         </div>
-    }
-</div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <!-- Alert Messages -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert" data-aos="fade-down">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                    <div>
+                        <strong>Success!</strong> @TempData["SuccessMessage"]
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert" data-aos="fade-down">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                    <div>
+                        <strong>Error!</strong> @TempData["ErrorMessage"]
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert" data-aos="fade-down">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-circle-fill me-3 fs-4"></i>
+                    <div>
+                        <strong>Notice!</strong> @TempData["WarningMessage"]
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <!-- Empty State -->
+            <div class="text-center py-5" data-aos="fade-up">
+                <div class="empty-state">
+                    <div class="empty-icon mb-4">
+                        <i class="bi bi-clipboard-x text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-muted mb-3">No Service Requests Yet</h3>
+                    <p class="text-muted mb-4 lead">
+                        You haven't created any service requests. Start by requesting your first automotive service.
+                    </p>
+                    <a asp-action="CreateOrder" class="btn btn-primary btn-lg px-4 py-3 fw-semibold">
+                        <i class="bi bi-plus-circle me-2"></i>Create Your First Request
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Orders Content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" data-aos="fade-up">
+                        <!-- Advanced Filter Tabs -->
+                        <div class="card-header bg-white border-0 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="fw-bold mb-0 text-primary">
+                                    <i class="bi bi-funnel me-2"></i>Filter Requests
+                                </h4>
+                                <div class="search-box">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0">
+                                            <i class="bi bi-search text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-0 bg-light" placeholder="Search requests..." id="searchInput">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <ul class="nav nav-pills nav-fill gap-2" id="orderTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(string.IsNullOrEmpty(currentFilter) ? "active" : "") rounded-pill px-4 fw-semibold" 
+                                            id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="@(string.IsNullOrEmpty(currentFilter) ? "true" : "false")">
+                                        <i class="bi bi-grid me-2"></i>All Orders
+                                        <span class="badge bg-white text-primary ms-2">@Model.Count()</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(currentFilter == "Pending" ? "active" : "") rounded-pill px-4 fw-semibold" 
+                                            id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="@(currentFilter == "Pending" ? "true" : "false")">
+                                        <i class="bi bi-clock me-2"></i>Pending
+                                        <span class="badge bg-warning text-dark ms-2">@pendingCount</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(currentFilter == "Accepted" ? "active" : "") rounded-pill px-4 fw-semibold" 
+                                            id="active-tab" data-bs-toggle="pill" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="@(currentFilter == "Accepted" ? "true" : "false")">
+                                        <i class="bi bi-gear me-2"></i>Active
+                                        <span class="badge bg-success ms-2">@acceptedCount</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(currentFilter == "Completed" ? "active" : "") rounded-pill px-4 fw-semibold" 
+                                            id="completed-tab" data-bs-toggle="pill" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="@(currentFilter == "Completed" ? "true" : "false")">
+                                        <i class="bi bi-check-circle me-2"></i>Completed
+                                        <span class="badge bg-primary ms-2">@completedCount</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(currentFilter == "Declined" ? "active" : "") rounded-pill px-4 fw-semibold" 
+                                            id="declined-tab" data-bs-toggle="pill" data-bs-target="#declined" type="button" role="tab" aria-controls="declined" aria-selected="@(currentFilter == "Declined" ? "true" : "false")">
+                                        <i class="bi bi-x-circle me-2"></i>Declined
+                                        <span class="badge bg-danger ms-2">@declinedCount</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Tab Content -->
+                        <div class="card-body p-0">
+                            <div class="tab-content" id="orderTabsContent">
+                                <div class="tab-pane fade @(string.IsNullOrEmpty(currentFilter) ? "show active" : "")" id="all" role="tabpanel" aria-labelledby="all-tab">
+                                    @await Html.PartialAsync("_OrdersList", Model)
+                                </div>
+                                <div class="tab-pane fade @(currentFilter == "Pending" ? "show active" : "")" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                                    @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Pending))
+                                </div>
+                                <div class="tab-pane fade @(currentFilter == "Accepted" ? "show active" : "")" id="active" role="tabpanel" aria-labelledby="active-tab">
+                                    @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Accepted))
+                                </div>
+                                <div class="tab-pane fade @(currentFilter == "Completed" ? "show active" : "")" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                                    @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Completed))
+                                </div>
+                                <div class="tab-pane fade @(currentFilter == "Declined" ? "show active" : "")" id="declined" role="tabpanel" aria-labelledby="declined-tab">
+                                    @await Html.PartialAsync("_OrdersList", Model.Where(o => o.Status == OrderStatus.Declined))
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
 
 @section Scripts {
     <script>
-        // Enable Bootstrap tabs
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS animations
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 600,
+                    easing: 'ease-out-cubic',
+                    once: true
+                });
+            }
+            
+            // Enable Bootstrap pills with smooth transitions
             var triggerTabList = Array.from(document.querySelectorAll('#orderTabs button'));
             triggerTabList.forEach(function(triggerEl) {
                 var tabTrigger = new bootstrap.Tab(triggerEl);
                 
                 triggerEl.addEventListener('click', function(e) {
                     e.preventDefault();
+                    
+                    // Add loading animation
+                    const target = document.querySelector(this.getAttribute('data-bs-target'));
+                    if (target) {
+                        target.style.opacity = '0.5';
+                        setTimeout(() => {
+                            target.style.opacity = '1';
+                        }, 150);
+                    }
+                    
                     tabTrigger.show();
                 });
             });
+            
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const orderCards = document.querySelectorAll('.order-card, tr[data-searchable]');
+                    
+                    orderCards.forEach(function(card) {
+                        const text = card.textContent.toLowerCase();
+                        const shouldShow = text.includes(searchTerm);
+                        card.style.display = shouldShow ? '' : 'none';
+                        
+                        // Add fade animation
+                        if (shouldShow) {
+                            card.style.opacity = '0';
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                            }, 50);
+                        }
+                    });
+                });
+            }
+            
+            // Add hover effects to order cards
+            const orderCards = document.querySelectorAll('.order-card');
+            orderCards.forEach(function(card) {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '';
+                });
+            });
+            
+            // Auto-refresh for pending orders (every 30 seconds)
+            if (document.querySelector('#pending.show.active') || document.querySelector('#active.show.active')) {
+                setInterval(function() {
+                    // Only refresh if user is still on the page and viewing pending/active orders
+                    if (!document.hidden && (document.querySelector('#pending.show.active') || document.querySelector('#active.show.active'))) {
+                        location.reload();
+                    }
+                }, 30000);
+            }
         });
     </script>
 }
+
+<style>
+    .orders-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .orders-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.5;
+    }
+    
+    .stat-card {
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .hero-action .btn {
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .hero-action .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .nav-pills .nav-link {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        margin: 0 2px;
+    }
+    
+    .nav-pills .nav-link:hover {
+        background-color: rgba(102, 126, 234, 0.1);
+        border-color: rgba(102, 126, 234, 0.2);
+        transform: translateY(-1px);
+    }
+    
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white !important;
+    }
+    
+    .nav-pills .nav-link.active .badge {
+        background: rgba(255, 255, 255, 0.9) !important;
+        color: #667eea !important;
+    }
+    
+    .search-box .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        border-color: #667eea;
+    }
+    
+    .empty-state {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .empty-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @@keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .alert {
+        animation: slideDown 0.5s ease;
+    }
+    
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .tab-pane {
+        transition: opacity 0.3s ease;
+    }
+    
+    /* Custom scrollbar for better UX */
+    .card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .card-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .card-body::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+    
+    .card-body::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+</style>
