@@ -4057,11 +4057,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\USER\\OneDrive\\Desktop\\AutoFix\\AutoFix\\AutoFix.csproj",
+      "projectUniqueName": "c:\\Users\\USER\\OneDrive\\Desktop\\AutoFix\\AutoFix\\AutoFix.csproj",
       "projectName": "AutoFix",
-      "projectPath": "C:\\Users\\USER\\OneDrive\\Desktop\\AutoFix\\AutoFix\\AutoFix.csproj",
+      "projectPath": "c:\\Users\\USER\\OneDrive\\Desktop\\AutoFix\\AutoFix\\AutoFix.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\USER\\OneDrive\\Desktop\\AutoFix\\AutoFix\\obj\\",
+      "outputPath": "c:\\Users\\USER\\OneDrive\\Desktop\\AutoFix\\AutoFix\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config"

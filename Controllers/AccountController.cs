@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using MongoDB.Driver;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
 namespace AutoFix.Controllers
 {    public class AccountController : Controller
@@ -130,9 +131,7 @@ namespace AutoFix.Controllers
         {
             await _authService.LogoutUserAsync();
             return RedirectToAction("Index", "Home");
-        }
-
-        [HttpGet]
+        }        [HttpGet]
         [Authorize]
         public async Task<IActionResult> Profile()
         {
@@ -157,7 +156,8 @@ namespace AutoFix.Controllers
                 // Get completed orders count
                 ViewBag.CompletedOrdersCount = mechanic.CompletedOrders;
                 
-                return View("MechanicProfile", mechanic);
+                // First try to use the enhanced Profile.cshtml
+                return View("Profile", mechanic);
             }
             else
             {                var client = await _authService.GetClientByIdAsync(userId);
@@ -176,17 +176,16 @@ namespace AutoFix.Controllers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to get client orders");
-                    ViewBag.RecentOrders = new List<ClientOrder>();
-                    ViewBag.OrdersCount = 0;
+                    ViewBag.RecentOrders = new List<ClientOrder>();                    ViewBag.OrdersCount = 0;
                 }
                 
-                return View("ClientProfile", client);
+                // First try to use the enhanced Profile.cshtml
+                return View("Profile", client);
             }
         }
-        
-        [HttpPost]
+          [HttpPost]
         [Authorize(Roles = "Mechanic")]
-        public async Task<IActionResult> UpdateProfile(string id, List<string> Skills, List<string> Services, string Bio)
+        public async Task<IActionResult> UpdateMechanicSkills(string id, List<string> Skills, List<string> Services, string Bio)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -219,7 +218,7 @@ namespace AutoFix.Controllers
                 return View("MechanicProfile", mechanic);
             }
             
-            return RedirectToAction("Profile");
+            return RedirectToAction("MechanicProfile");
         }
 
         [HttpGet]
@@ -238,6 +237,162 @@ namespace AutoFix.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(string id, string fullName, string userName, 
+                                                    string email, string phoneNumber, string address,
+                                                    string? bio = null, 
+                                                    List<string>? skills = null, List<string>? services = null,
+                                                    string? vehicleMake = null, string? vehicleModel = null, string? vehicleYear = null,
+                                                    IFormFile? ProfileImage = null)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId != id)
+            {
+                return Forbid();
+            }
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            string redirectUrl = "Profile"; // Default redirect
+            
+            try
+            {
+                if (role == "Mechanic")
+                {
+                    var mechanic = await _authService.GetMechanicByIdAsync(userId);
+                    if (mechanic == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Update mechanic properties
+                    mechanic.FullName = fullName;
+                    mechanic.UserName = userName;
+                    mechanic.Email = email;
+                    mechanic.PhoneNumber = phoneNumber ?? mechanic.PhoneNumber;
+                    mechanic.Address = address ?? mechanic.Address;
+                    mechanic.Skills = skills ?? mechanic.Skills;
+                    mechanic.Services = services ?? mechanic.Services;
+                    mechanic.Bio = bio ?? mechanic.Bio;
+
+                    await _authService.UpdateMechanicProfileAsync(mechanic);
+                    redirectUrl = "MechanicProfile";
+                }
+                else
+                {
+                    var client = await _authService.GetClientByIdAsync(userId);
+                    if (client == null)
+                    {
+                        return NotFound();
+                    }
+                    
+                    // Update client properties
+                    client.FullName = fullName;
+                    client.UserName = userName;
+                    client.Email = email;
+                    client.PhoneNumber = phoneNumber ?? client.PhoneNumber;
+                    client.Address = address ?? client.Address;
+                    
+                    // Update vehicle information if provided
+                    if (!string.IsNullOrEmpty(vehicleMake) || !string.IsNullOrEmpty(vehicleModel) || !string.IsNullOrEmpty(vehicleYear))
+                    {
+                        client.VehicleInformation = new Dictionary<string, string>
+                        {
+                            { "Make", vehicleMake ?? "" },
+                            { "Model", vehicleModel ?? "" },
+                            { "Year", vehicleYear ?? "" }
+                        };
+                    }
+                    
+                    // Update the client profile using our new method
+                    await _authService.UpdateClientProfileAsync(client);
+                    redirectUrl = "ClientProfile";
+                }
+
+                // Set success message
+                TempData["SuccessMessage"] = "Your profile has been updated successfully!";
+                return RedirectToAction(redirectUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating profile: {Message}", ex.Message);
+                ModelState.AddModelError("", $"Error updating profile: {ex.Message}");
+                return RedirectToAction("Profile");
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> MechanicProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role != "Mechanic")
+            {
+                return Forbid();
+            }
+            
+            var mechanic = await _authService.GetMechanicByIdAsync(userId);
+            if (mechanic == null)
+            {
+                return NotFound();
+            }
+            
+            // Get completed orders count
+            ViewBag.CompletedOrdersCount = mechanic.CompletedOrders;
+            
+            return View(mechanic);
+        }
+        
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ClientProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role != "Client")
+            {
+                return Forbid();
+            }
+            
+            var client = await _authService.GetClientByIdAsync(userId);
+            if (client == null)
+            {
+                return NotFound();
+            }
+            
+            // Get recent orders
+            try 
+            {
+                var allOrders = await _orderService.GetClientOrdersAsync(userId);
+                var recentOrders = allOrders.OrderByDescending(o => o.OrderDate).Take(5).ToList();
+                ViewBag.RecentOrders = recentOrders;
+                ViewBag.OrdersCount = allOrders.Count;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get client orders");
+                ViewBag.RecentOrders = new List<ClientOrder>();
+                ViewBag.OrdersCount = 0;
+            }
+            
+            return View(client);
         }
     }
 }

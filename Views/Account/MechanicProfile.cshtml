@@ -15,11 +15,22 @@
 }
 
 <div class="container mt-4">
+    <!-- Success Alert -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
     <div class="row">
         <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
+            <div class="card shadow-sm mb-4">                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Profile Information</h5>
+                    <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#editProfileModal" title="Edit Profile">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
@@ -49,9 +60,8 @@
         </div>
         
         <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Update Profile</h5>
+            <div class="card shadow-sm">                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">My Services & Skills</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" asp-action="UpdateProfile">
@@ -108,3 +118,391 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editProfileModalLabel"><i class="bi bi-person-gear me-2"></i>Edit Mechanic Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Account" asp-action="UpdateProfile" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" id="profileEditForm">
+                    <div class="row g-3">
+                        <!-- Profile Image Upload -->
+                        <div class="col-12 mb-3 text-center">
+                            <div class="position-relative mx-auto mb-3" style="width: 120px; height: 120px;">
+                                <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center overflow-hidden" style="width: 120px; height: 120px;">
+                                    <i class="bi bi-person-circle text-primary" style="font-size: 5rem;"></i>
+                                </div>
+                                <label for="profileImage" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; cursor: pointer;">
+                                    <i class="bi bi-camera"></i>
+                                </label>
+                                <input type="file" id="profileImage" name="ProfileImage" class="d-none" accept="image/*">
+                            </div>
+                            <p class="small text-muted">Click the camera icon to change your profile picture</p>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="fullName" name="FullName" value="@Model.FullName" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-at"></i></span>
+                                <input type="text" class="form-control" id="userName" name="UserName" value="@Model.UserName" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="Email" value="@Model.Email" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" placeholder="Enter phone number">
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-medium">Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" class="form-control" id="address" name="Address" value="@Model.Address" placeholder="Enter your address">
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-4">
+                            <label class="form-label fw-medium">Bio / Professional Summary</label>
+                            <textarea class="form-control" id="bio" name="Bio" rows="3" placeholder="Tell clients about your expertise and experience">@Model.Bio</textarea>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <h6 class="fw-medium mb-3">Skills and Expertise</h6>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-tools"></i></span>
+                                <input type="text" class="form-control" id="newSkill" placeholder="Add a new skill">
+                                <button type="button" class="btn btn-primary" id="addSkillBtn"><i class="bi bi-plus-lg"></i></button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-2" id="skillsContainer">
+                                <!-- Skills will be added here dynamically -->
+                                @foreach(var skill in Model.Skills)
+                                {
+                                    <span class="badge bg-primary py-2 px-3 d-flex align-items-center">
+                                        <span>@skill</span>
+                                        <button type="button" class="btn-close btn-close-white ms-2" aria-label="Remove" style="font-size: 0.5rem;"></button>
+                                        <input type="hidden" name="Skills" value="@skill">
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-4">
+                            <h6 class="fw-medium mb-3">Services Offered</h6>
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" id="newServiceName" placeholder="Service name">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" id="newServicePrice" placeholder="Price (e.g. $50)">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-primary w-100" id="addServiceBtn"><i class="bi bi-plus-lg"></i></button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover" id="servicesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Price</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Services will be added here dynamically -->
+                                        @foreach(var service in Model.Services)
+                                        {
+                                            <tr>
+                                                <td>@service</td>
+                                                <td>Varies</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                    <input type="hidden" name="Services" value="@service">
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="col-12 mb-3">
+                            <h6 class="fw-medium mb-3">Theme Customization</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="themePreference" id="themeLight" value="light" checked>
+                                    <label class="form-check-label" for="themeLight">
+                                        <i class="bi bi-brightness-high me-1"></i> Light Mode
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="themePreference" id="themeDark" value="dark">
+                                    <label class="form-check-label" for="themeDark">
+                                        <i class="bi bi-moon me-1"></i> Dark Mode
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="themePreference" id="themeSystem" value="system">
+                                    <label class="form-check-label" for="themeSystem">
+                                        <i class="bi bi-display me-1"></i> System Default
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <h6 class="fw-medium mb-3">Link Social Accounts</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-primary text-white">
+                                            <i class="bi bi-facebook"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="facebookLink" name="FacebookLink" placeholder="Facebook profile URL">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-info text-white">
+                                            <i class="bi bi-linkedin"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="linkedinLink" name="LinkedinLink" placeholder="LinkedIn profile URL">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <h6 class="fw-medium mb-3">Change Password</h6>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label class="form-label small">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword" name="CurrentPassword">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword" name="NewPassword">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Cancel</button>
+                <button type="submit" form="profileEditForm" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Skills & Services JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle skills
+        const addSkillBtn = document.getElementById('addSkillBtn');
+        const newSkillInput = document.getElementById('newSkill');
+        const skillsContainer = document.getElementById('skillsContainer');
+        
+        if (addSkillBtn) {
+            addSkillBtn.addEventListener('click', function() {
+                const skillText = newSkillInput.value.trim();
+                if (skillText) {
+                    addSkillTag(skillText);
+                    newSkillInput.value = '';
+                    newSkillInput.focus();
+                }
+            });
+        }
+        
+        function addSkillTag(skill) {
+            // Create visible tag
+            const tag = document.createElement('span');
+            tag.className = 'badge bg-primary py-2 px-3 d-flex align-items-center';
+            tag.innerHTML = `
+                <span>${skill}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" aria-label="Remove" style="font-size: 0.5rem;"></button>
+                <input type="hidden" name="Skills" value="${skill}">
+            `;
+            skillsContainer.appendChild(tag);
+            
+            // Add remove event
+            tag.querySelector('.btn-close').addEventListener('click', function() {
+                tag.remove();
+            });
+        }
+        
+        // Handle existing skill removal
+        document.querySelectorAll('#skillsContainer .btn-close').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.badge').remove();
+            });
+        });
+        
+        // Handle services
+        const addServiceBtn = document.getElementById('addServiceBtn');
+        const newServiceNameInput = document.getElementById('newServiceName');
+        const newServicePriceInput = document.getElementById('newServicePrice');
+        const servicesTableBody = document.querySelector('#servicesTable tbody');
+        
+        if (addServiceBtn) {
+            addServiceBtn.addEventListener('click', function() {
+                const serviceName = newServiceNameInput.value.trim();
+                const servicePrice = newServicePriceInput.value.trim();
+                
+                if (serviceName) {
+                    addServiceRow(serviceName, servicePrice || 'Varies');
+                    newServiceNameInput.value = '';
+                    newServicePriceInput.value = '';
+                    newServiceNameInput.focus();
+                }
+            });
+        }
+        
+        function addServiceRow(name, price) {
+            if (!servicesTableBody) return;
+            
+            // Create table row
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${name}</td>
+                <td>${price}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    <input type="hidden" name="Services" value="${name}">
+                </td>
+            `;
+            servicesTableBody.appendChild(row);
+            
+            // Add remove event
+            row.querySelector('.btn-outline-danger').addEventListener('click', function() {
+                row.remove();
+            });
+        }
+        
+        // Handle existing service removal
+        document.querySelectorAll('#servicesTable .btn-outline-danger').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('tr').remove();
+            });
+        });
+        
+        // Preview profile image
+        const profileImageInput = document.getElementById('profileImage');
+        profileImageInput?.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgPreview = document.createElement('img');
+                    imgPreview.src = e.target.result;
+                    imgPreview.className = 'w-100 h-100 rounded-circle';
+                    imgPreview.style.objectFit = 'cover';
+                    
+                    const previewContainer = document.querySelector('.rounded-circle.bg-light.border');
+                    previewContainer.innerHTML = '';
+                    previewContainer.appendChild(imgPreview);
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Theme switching functionality
+        const themeRadios = document.querySelectorAll('input[name="themePreference"]');
+        const savedTheme = localStorage.getItem('themePreference') || 'light';
+        document.querySelector(`input[value="${savedTheme}"]`)?.checked = true;
+        
+        themeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                localStorage.setItem('themePreference', e.target.value);
+            });
+        });
+    });
+</script>
+
+<!-- Custom CSS -->
+<style>
+    /* Badge and button styles */
+    .badge .btn-close {
+        font-size: 0.5rem;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    
+    .badge .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .badge {
+        transition: all 0.3s;
+    }
+    
+    .badge:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Table hover effects */
+    #servicesTable tbody tr {
+        transition: background-color 0.3s;
+    }
+    
+    #servicesTable tbody tr:hover {
+        background-color: rgba(0,123,255,0.05);
+    }
+    
+    /* Input focus effects */
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.15);
+    }
+    
+    /* Button hover effects */
+    .btn-primary {
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+    }
+    
+    /* Profile image hover effect */
+    .rounded-circle.border {
+        transition: all 0.3s;
+    }
+    
+    .rounded-circle.border:hover {
+        border-color: var(--bs-primary) !important;
+    }
+</style>

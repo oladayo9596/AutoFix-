@@ -5,15 +5,25 @@
 }
 
 <div class="container mt-4">
+    <!-- Success Alert -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
     <div class="row">
         <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
+            <div class="card shadow-sm mb-4">                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Profile Information</h5>
+                    <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#editProfileModal" title="Edit Profile">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
                 </div>
                 <div class="card-body">
-                    <div class="text-center mb-4">
-                        <div class="avatar-container bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                    <div class="text-center mb-4"><div class="avatar-container bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
                             <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
                         </div>
                         <h4 class="mb-1">@Model.FullName</h4>
@@ -34,6 +44,12 @@
                             <span>@ViewBag.OrdersCount</span>
                         </li>
                     </ul>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="bi bi-pencil me-1"></i> Edit Profile
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -48,9 +64,8 @@
                     {
                         <div class="table-responsive">
                             <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Order ID</th>
+                                <thead>                                    <tr>
+                                        <th>Request ID</th>
                                         <th>Service</th>
                                         <th>Status</th>
                                         <th>Date</th>
@@ -60,8 +75,7 @@
                                 <tbody>
                                     @foreach (var order in ViewBag.RecentOrders)
                                     {
-                                        <tr>
-                                            <td>@order.OrderNumber</td>
+                                        <tr>                                            <td>#@order.Id.Substring(order.Id.Length - 6)</td>
                                             <td>@order.ServiceType</td>
                                             <td>                                                <span class="badge bg-@(order.Status == OrderStatus.Pending ? "warning" : 
                                                                     order.Status == OrderStatus.Accepted ? "info" : 
@@ -70,7 +84,7 @@
                                                     @order.Status
                                                 </span>
                                             </td>
-                                            <td>@order.CreatedDate.ToString("MMM dd")</td>
+                                            <td>@order.OrderDate.ToString("MMM dd")</td>
                                             <td>
                                                 <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.Id" 
                                                    class="btn btn-sm btn-outline-primary">Details</a>
@@ -97,3 +111,125 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editProfileModalLabel"><i class="bi bi-person-gear me-2"></i>Edit Profile Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Account" asp-action="UpdateProfile" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" id="profileEditForm">
+                    <div class="row g-3">
+                        <!-- Profile Image Upload -->
+                        <div class="col-12 mb-3 text-center">
+                            <div class="position-relative mx-auto mb-3" style="width: 120px; height: 120px;">
+                                <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center overflow-hidden" style="width: 120px; height: 120px;">
+                                    <i class="bi bi-person-circle text-primary" style="font-size: 5rem;"></i>
+                                </div>
+                                <label for="profileImage" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; cursor: pointer;">
+                                    <i class="bi bi-camera"></i>
+                                </label>
+                                <input type="file" id="profileImage" name="ProfileImage" class="d-none" accept="image/*">
+                            </div>
+                            <p class="small text-muted">Click the camera icon to change your profile picture</p>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="fullName" name="FullName" value="@Model.FullName" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-at"></i></span>
+                                <input type="text" class="form-control" id="userName" name="UserName" value="@Model.UserName" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="Email" value="@Model.Email" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" placeholder="Enter phone number">
+                            </div>
+                        </div>                        <div class="col-12 mb-3">
+                            <label class="form-label fw-medium">Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" class="form-control" id="address" name="Address" value="@Model.Address" placeholder="Enter your address">
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <h6 class="fw-medium mb-3">Vehicle Information</h6>                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Vehicle Make</label>
+                                    <input type="text" class="form-control" name="VehicleMake" 
+                                           value="@(Model.VehicleInformation != null && Model.VehicleInformation.ContainsKey("Make") ? Model.VehicleInformation["Make"] : "")" 
+                                           placeholder="e.g., Toyota">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Vehicle Model</label>
+                                    <input type="text" class="form-control" name="VehicleModel" 
+                                           value="@(Model.VehicleInformation != null && Model.VehicleInformation.ContainsKey("Model") ? Model.VehicleInformation["Model"] : "")"
+                                           placeholder="e.g., Camry">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Vehicle Year</label>
+                                    <input type="text" class="form-control" name="VehicleYear" 
+                                           value="@(Model.VehicleInformation != null && Model.VehicleInformation.ContainsKey("Year") ? Model.VehicleInformation["Year"] : "")"
+                                           placeholder="e.g., 2020">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="bi bi-x-lg me-1"></i>Cancel</button>
+                <button type="submit" form="profileEditForm" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Profile Image Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preview profile image
+        const profileImageInput = document.getElementById('profileImage');
+        profileImageInput?.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgPreview = document.createElement('img');
+                    imgPreview.src = e.target.result;
+                    imgPreview.className = 'w-100 h-100 rounded-circle';
+                    imgPreview.style.objectFit = 'cover';
+                    
+                    const previewContainer = document.querySelector('.rounded-circle.bg-light.border');
+                    previewContainer.innerHTML = '';
+                    previewContainer.appendChild(imgPreview);
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    });
+</script>
+
+

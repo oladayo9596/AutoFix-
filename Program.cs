@@ -1,7 +1,9 @@
 using AutoFix.Data;
 using AutoFix.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +37,10 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddLogging(logging => 
 {
     logging.ClearProviders();
-    logging.AddConsole();
+    logging.AddConsole(options => 
+    {
+        options.FormatterName = "Simple";
+    });
     logging.AddDebug();
 });
 
@@ -58,7 +63,11 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{    app.UseDeveloperExceptionPage();
+{
+    app.UseDeveloperExceptionPage(new DeveloperExceptionPageOptions
+    {
+        SourceCodeLineCount = 10
+    });
 }
 else
 {

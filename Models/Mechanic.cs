@@ -13,6 +13,8 @@ namespace AutoFix.Models
         
         public string Bio { get; set; } = string.Empty;
         
+        public string Address { get; set; } = string.Empty;
+        
         public double Rating { get; set; } = 0.0;
         
         public int CompletedOrders { get; set; } = 0;

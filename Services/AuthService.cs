@@ -21,6 +21,7 @@ namespace AutoFix.Services
         Task<bool> IsUsernameUniqueAsync(string username);
         Task<bool> IsEmailUniqueAsync(string email);
         Task<bool> UpdateMechanicProfileAsync(Mechanic mechanic);
+        Task<bool> UpdateClientProfileAsync(Client client);
         Task<Mechanic?> GetMechanicByIdAsync(string id);
         Task<Client?> GetClientByIdAsync(string id);
         string HashPassword(string password);
@@ -231,16 +232,19 @@ namespace AutoFix.Services
         {
             string hashedInput = HashPassword(password);
             return string.Equals(hashedInput, passwordHash, StringComparison.OrdinalIgnoreCase);
-        }
-
-        public async Task<bool> UpdateMechanicProfileAsync(Mechanic mechanic)
+        }        public async Task<bool> UpdateMechanicProfileAsync(Mechanic mechanic)
         {
             try
             {
                 var filter = Builders<Mechanic>.Filter.Eq(m => m.Id, mechanic.Id);
                 var update = Builders<Mechanic>.Update
+                    .Set(m => m.FullName, mechanic.FullName)
+                    .Set(m => m.UserName, mechanic.UserName)
+                    .Set(m => m.Email, mechanic.Email)
+                    .Set(m => m.PhoneNumber, mechanic.PhoneNumber)
                     .Set(m => m.Skills, mechanic.Skills)
-                    .Set(m => m.Services, mechanic.Services);
+                    .Set(m => m.Services, mechanic.Services)
+                    .Set(m => m.Bio, mechanic.Bio);
 
                 var result = await _context.Mechanics.UpdateOneAsync(filter, update);
                 return result.ModifiedCount > 0;
@@ -248,6 +252,31 @@ namespace AutoFix.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating mechanic profile: {Message}", ex.Message);
+                return false;
+            }
+        }        public async Task<bool> UpdateClientProfileAsync(Client client)
+        {
+            try
+            {
+                var filter = Builders<Client>.Filter.Eq(c => c.Id, client.Id);
+                var update = Builders<Client>.Update
+                    .Set(c => c.FullName, client.FullName)
+                    .Set(c => c.UserName, client.UserName)
+                    .Set(c => c.Email, client.Email)
+                    .Set(c => c.PhoneNumber, client.PhoneNumber)
+                    .Set(c => c.Address, client.Address);
+                
+                if (client.VehicleInformation != null && client.VehicleInformation.Count > 0)
+                {
+                    update = update.Set(c => c.VehicleInformation, client.VehicleInformation);
+                }
+
+                var result = await _context.Clients.UpdateOneAsync(filter, update);
+                return result.ModifiedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating client profile: {Message}", ex.Message);
                 return false;
             }
         }
