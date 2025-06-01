@@ -2,41 +2,348 @@
     ViewData["Title"] = "Login";
 }
 
-<h1 class="text-center">Login</h1>
+<style>
+    .auth-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1a365d 0%, #2d4a72 50%, #4a5568 100%);
+        position: relative;
+        overflow: hidden;
+    }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <form method="post" asp-action="Login">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    .auth-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1a365d 0%, #2d4a72 50%, #4a5568 100%);
+        opacity: 0.1;
+    }
 
-                    <div class="form-group mb-3">
-                        <label for="emailOrUsername" class="form-label">Username or Email</label>
-                        <input type="text" class="form-control" id="emailOrUsername" name="emailOrUsername" required>
+    .auth-container {
+        position: relative;
+        z-index: 1;
+        padding: 80px 20px 40px;
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: slideInUp 0.6s ease-out;
+    }
+
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .login-header {
+        background: linear-gradient(135deg, #1a365d 0%, #2d4a72 50%, #4a5568 100%);
+        padding: 40px 30px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .login-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @@keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .login-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-body {
+        padding: 40px 30px;
+    }
+
+    .floating-label {
+        position: relative;
+        margin-bottom: 30px;
+    }
+
+    .floating-label input {
+        width: 100%;
+        padding: 20px 15px 15px;
+        font-size: 16px;
+        border: 2px solid #e1e5e9;
+        border-radius: 12px;
+        background: white;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .floating-label input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .floating-label label {
+        position: absolute;
+        top: 20px;
+        left: 15px;
+        font-size: 16px;
+        color: #8b949e;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        background: white;
+        padding: 0 5px;
+    }
+
+    .floating-label input:focus + label,
+    .floating-label input:not(:placeholder-shown) + label {
+        top: -8px;
+        left: 12px;
+        font-size: 12px;
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .custom-checkbox {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .custom-checkbox input {
+        opacity: 0;
+        position: absolute;
+    }
+
+    .custom-checkbox .checkmark {
+        width: 20px;
+        height: 20px;
+        background: white;
+        border: 2px solid #e1e5e9;
+        border-radius: 6px;
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .custom-checkbox input:checked + .checkmark {
+        background: #667eea;
+        border-color: #667eea;
+    }
+
+    .custom-checkbox .checkmark::after {
+        content: '✓';
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .custom-checkbox input:checked + .checkmark::after {
+        opacity: 1;
+    }
+
+    .login-btn {
+        background: linear-gradient(135deg, #1a365d 0%, #2d4a72 50%, #4a5568 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 18px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .login-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .login-btn:hover::before {
+        left: 100%;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .login-footer {
+        text-align: center;
+        padding: 30px;
+        border-top: 1px solid #f1f3f4;
+    }
+
+    .register-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .register-link::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #667eea;
+        transition: width 0.3s ease;
+    }
+
+    .register-link:hover::after {
+        width: 100%;
+    }
+
+    .brand-logo {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .validation-errors {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #dc3545;
+    }
+
+    @@media (max-width: 768px) {
+        .auth-container {
+            padding: 40px 15px 20px;
+        }
+        
+        .login-body {
+            padding: 30px 20px;
+        }
+        
+        .login-header {
+            padding: 30px 20px;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-7 col-sm-9">
+                    <div class="login-card">
+                        <div class="login-header">
+                            <div class="brand-logo">
+                                <i class="bi bi-gear-fill"></i>
+                            </div>
+                            <h1>Welcome Back</h1>
+                            <p>Sign in to your AutoFix account</p>
+                        </div>
+
+                        <div class="login-body">
+                            <form method="post" asp-action="Login">
+                                <div asp-validation-summary="ModelOnly" class="validation-errors" style="display: none;"></div>
+
+                                <div class="floating-label">
+                                    <input type="text" id="emailOrUsername" name="emailOrUsername" placeholder=" " required>
+                                    <label for="emailOrUsername">
+                                        <i class="bi bi-person me-2"></i>Username or Email
+                                    </label>
+                                </div>
+
+                                <div class="floating-label">
+                                    <input type="password" id="password" name="password" placeholder=" " required>
+                                    <label for="password">
+                                        <i class="bi bi-lock me-2"></i>Password
+                                    </label>
+                                </div>
+
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                                    <span class="checkmark"></span>
+                                    <span>Remember me for 30 days</span>
+                                </label>
+
+                                <button type="submit" class="login-btn">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Sign In
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="login-footer">
+                            <p class="mb-0">Don't have an account? 
+                                <a asp-action="Register" class="register-link">Create one now</a>
+                            </p>
+                        </div>
                     </div>
-
-                    <div class="form-group mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
-                        <label class="form-check-label" for="rememberMe">
-                            Remember me
-                        </label>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </div>
-
-                    <div class="mt-3 text-center">
-                        <p>Don't have an account?</p>
-                        <a asp-action="Register" class="btn btn-outline-primary">Register</a>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -44,4 +351,52 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Show validation errors if they exist
+            if ($('.validation-errors ul li').length > 0) {
+                $('.validation-errors').show();
+            }
+
+            // Enhanced form validation
+            $('form').on('submit', function(e) {
+                var emailOrUsername = $('#emailOrUsername').val().trim();
+                var password = $('#password').val();
+
+                if (!emailOrUsername || !password) {
+                    e.preventDefault();
+                    showCustomAlert('Please fill in all required fields.', 'error');
+                    return false;
+                }
+
+                // Add loading state to button
+                $('.login-btn').html('<i class="bi bi-arrow-clockwise me-2"></i>Signing In...');
+                $('.login-btn').prop('disabled', true);
+            });
+
+            // Custom alert function
+            function showCustomAlert(message, type) {
+                var alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+                var alertHtml = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+                
+                $('.login-body form').prepend(alertHtml);
+                
+                setTimeout(function() {
+                    $('.alert').fadeOut();
+                }, 5000);
+            }
+
+            // Add floating label animation
+            $('.floating-label input').on('blur', function() {
+                if ($(this).val() === '') {
+                    $(this).removeClass('filled');
+                } else {
+                    $(this).addClass('filled');
+                }
+            });
+        });
+    </script>
 }
